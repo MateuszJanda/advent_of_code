@@ -1,0 +1,17 @@
+.vscode/
+.cache/
+*.code-workspace
+build/
+build-*-Debug/
+
+*~
+*.swp
+
+*.diff
+*.patch
+
+target/
+Cargo.lock
+
+main
+a.out
