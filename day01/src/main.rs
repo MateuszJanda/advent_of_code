@@ -4,24 +4,38 @@
 use std::io;
 
 fn main() {
-    let mut max_calories = 0;
-    let mut efl_calories = 0;
+    let mut calories = 0;
+    let mut elf_calories = vec![];
 
     loop {
         let mut line = String::new();
         io::stdin().read_line(&mut line).unwrap();
         let stripped_line = match line.strip_suffix("\n") {
-            None => break,
+            None => {
+                elf_calories.push(calories);
+                break;
+            }
             Some(s) => s,
         };
         if stripped_line.is_empty() {
-            max_calories = std::cmp::max(max_calories, efl_calories);
-            efl_calories = 0;
+            elf_calories.push(calories);
+            calories = 0;
         } else {
             let num: i32 = stripped_line.parse().unwrap();
-            efl_calories += num;
+            calories += num;
         }
     }
 
-    println!("{}", max_calories);
+    elf_calories.sort();
+    elf_calories.reverse();
+
+    let mut total_of_three = 0;
+    for i in 0..3 {
+        total_of_three += elf_calories[i];
+    }
+
+    // First solution
+    println!("Max calories: {}", elf_calories[0]);
+    // Second solution
+    println!("Top three: {}", total_of_three);
 }
