@@ -23,5 +23,5 @@ fn main() {
         }
     }
 
-    println!("Max calories: {}", max_calories);
+    println!("{}", max_calories);
 }
