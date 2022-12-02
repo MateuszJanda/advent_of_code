@@ -32,6 +32,7 @@ fn rate_element(ch2: char) -> Result<i32> {
         _ => Err("Inccorect char".to_string()),
     }
 }
+
 fn rate_result(ch1: char, ch2: char) -> i32 {
     match (ch1, ch2) {
         // Draw
