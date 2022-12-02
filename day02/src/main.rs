@@ -42,7 +42,7 @@ fn score_result(ch1: char, ch2: char) -> i32 {
         // Win
         ('A', 'Y') => 6,
         ('B', 'Z') => 6,
-        ('C', 'A') => 6,
+        ('C', 'X') => 6,
 
         // Lost
         _ => 0,
