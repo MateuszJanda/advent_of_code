@@ -49,8 +49,39 @@ fn score_result(ch1: char, ch2: char) -> i32 {
     }
 }
 
+fn choose_element(ch1: char, strategy: char) -> Result<char> {
+    match strategy {
+        // Lose
+        'X' => match ch1 {
+            'A' => Ok('Z'),
+            'B' => Ok('X'),
+            'C' => Ok('Y'),
+            _ => Err("Inccorect char".to_string()),
+        },
+
+        // Draw
+        'Y' => match ch1 {
+            'A' => Ok('X'),
+            'B' => Ok('Y'),
+            'C' => Ok('Z'),
+            _ => Err("Inccorect char".to_string()),
+        },
+
+        // Win
+        'Z' => match ch1 {
+            'A' => Ok('Y'),
+            'B' => Ok('Z'),
+            'C' => Ok('X'),
+            _ => Err("Inccorect char".to_string()),
+        },
+        _ => Err("Inccorect char".to_string()),
+    }
+}
+
 fn main() {
-    let mut result = 0;
+    let mut result1 = 0;
+    let mut result2 = 0;
+
     loop {
         match read_chars() {
             None => break,
@@ -58,11 +89,15 @@ fn main() {
                 let ch1 = v[0];
                 let ch2 = v[1];
 
-                result += score_choice(ch2).unwrap();
-                result += score_result(ch1, ch2);
+                result1 += score_choice(ch2).unwrap();
+                result1 += score_result(ch1, ch2);
+
+                result2 += score_choice(choose_element(ch1, ch2).unwrap()).unwrap();
+                result2 += score_result(ch1, choose_element(ch1, ch2).unwrap());
             }
         }
     }
 
-    println!("{}", result);
+    println!("{}", result1);
+    println!("{}", result2);
 }
