@@ -24,7 +24,7 @@ fn read_chars() -> Option<Vec<char>> {
 
 type Result<T> = std::result::Result<T, String>;
 
-fn score_choice(ch2: char) -> Result<i32> {
+fn rate_element(ch2: char) -> Result<i32> {
     match ch2 {
         'X' => Ok(1),
         'Y' => Ok(2),
@@ -32,7 +32,7 @@ fn score_choice(ch2: char) -> Result<i32> {
         _ => Err("Inccorect char".to_string()),
     }
 }
-fn score_result(ch1: char, ch2: char) -> i32 {
+fn rate_result(ch1: char, ch2: char) -> i32 {
     match (ch1, ch2) {
         // Draw
         ('A', 'X') => 3,
@@ -89,11 +89,11 @@ fn main() {
                 let ch1 = v[0];
                 let ch2 = v[1];
 
-                result1 += score_choice(ch2).unwrap();
-                result1 += score_result(ch1, ch2);
+                result1 += rate_element(ch2).unwrap();
+                result1 += rate_result(ch1, ch2);
 
-                result2 += score_choice(choose_element(ch1, ch2).unwrap()).unwrap();
-                result2 += score_result(ch1, choose_element(ch1, ch2).unwrap());
+                result2 += rate_element(choose_element(ch1, ch2).unwrap()).unwrap();
+                result2 += rate_result(ch1, choose_element(ch1, ch2).unwrap());
             }
         }
     }
