@@ -29,7 +29,7 @@ fn rate_element(ch2: char) -> Result<i32> {
         'X' => Ok(1),
         'Y' => Ok(2),
         'Z' => Ok(3),
-        _ => Err("Inccorect char".to_string()),
+        _ => Err("Incorrect char".to_string()),
     }
 }
 
@@ -57,7 +57,7 @@ fn choose_element(ch1: char, strategy: char) -> Result<char> {
             'A' => Ok('Z'),
             'B' => Ok('X'),
             'C' => Ok('Y'),
-            _ => Err("Inccorect char".to_string()),
+            _ => Err("Incorrect char".to_string()),
         },
 
         // Draw
@@ -65,7 +65,7 @@ fn choose_element(ch1: char, strategy: char) -> Result<char> {
             'A' => Ok('X'),
             'B' => Ok('Y'),
             'C' => Ok('Z'),
-            _ => Err("Inccorect char".to_string()),
+            _ => Err("Incorrect char".to_string()),
         },
 
         // Win
@@ -73,9 +73,9 @@ fn choose_element(ch1: char, strategy: char) -> Result<char> {
             'A' => Ok('Y'),
             'B' => Ok('Z'),
             'C' => Ok('X'),
-            _ => Err("Inccorect char".to_string()),
+            _ => Err("Incorrect char".to_string()),
         },
-        _ => Err("Inccorect char".to_string()),
+        _ => Err("Incorrect char".to_string()),
     }
 }
 
@@ -83,20 +83,15 @@ fn main() {
     let mut result1 = 0;
     let mut result2 = 0;
 
-    loop {
-        match read_chars() {
-            None => break,
-            Some(v) => {
-                let ch1 = v[0];
-                let ch2 = v[1];
+    while let Some(v) = read_chars() {
+        let ch1 = v[0];
+        let ch2 = v[1];
 
-                result1 += rate_element(ch2).unwrap();
-                result1 += rate_result(ch1, ch2);
+        result1 += rate_element(ch2).unwrap();
+        result1 += rate_result(ch1, ch2);
 
-                result2 += rate_element(choose_element(ch1, ch2).unwrap()).unwrap();
-                result2 += rate_result(ch1, choose_element(ch1, ch2).unwrap());
-            }
-        }
+        result2 += rate_element(choose_element(ch1, ch2).unwrap()).unwrap();
+        result2 += rate_result(ch1, choose_element(ch1, ch2).unwrap());
     }
 
     println!("{}", result1);
