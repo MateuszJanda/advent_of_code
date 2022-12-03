@@ -48,7 +48,7 @@ fn main() {
 
             if idx < half_size {
                 item_tab[*ch as usize] = true;
-            } else if idx >= half_size && item_tab[*ch as usize] && item_found == false {
+            } else if !item_found && idx >= half_size && item_tab[*ch as usize] {
                 items_sum += item_priority(*ch);
                 item_found = true;
             }
