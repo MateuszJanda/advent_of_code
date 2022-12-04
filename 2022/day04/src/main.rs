@@ -35,7 +35,7 @@ fn main() {
         let size_a = a2 - a1;
         let size_b = b2 - b1;
         let size_total = std::cmp::max(a2, b2) - std::cmp::min(a1, b1);
-        if  size_total <= size_a + size_b {
+        if size_total <= size_a + size_b {
             counter2 += 1;
         }
     }
