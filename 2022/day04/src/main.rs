@@ -24,12 +24,18 @@ fn read_nums() -> Option<(i32, i32, i32, i32)> {
 }
 
 fn main() {
-    let mut counter = 0;
+    let mut counter1 = 0;
+    let mut counter2 = 0;
+
     while let Some((a1, a2, b1, b2)) = read_nums() {
         if (b1 >= a1 && b2 <= a2) || (a1 >= b1 && a2 <= b2) {
-            counter += 1;
+            counter1 += 1;
+            counter2 += 1;
+        } else if b1 <= a2 || b2 <= a1 {
+            counter2 += 1;
         }
     }
 
-    println!("{}", counter);
+    println!("{}", counter1);
+    println!("{}", counter2);
 }
