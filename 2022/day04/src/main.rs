@@ -30,8 +30,12 @@ fn main() {
     while let Some((a1, a2, b1, b2)) = read_nums() {
         if (b1 >= a1 && b2 <= a2) || (a1 >= b1 && a2 <= b2) {
             counter1 += 1;
-            counter2 += 1;
-        } else if b1 <= a2 || b2 <= a1 {
+        }
+
+        let size_a = a2 - a1;
+        let size_b = b2 - b1;
+        let size_total = std::cmp::max(a2, b2) - std::cmp::min(a1, b1);
+        if  size_total <= size_a + size_b {
             counter2 += 1;
         }
     }
