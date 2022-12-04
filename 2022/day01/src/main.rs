@@ -35,7 +35,7 @@ fn main() {
     }
 
     // First solution
-    println!("Max calories: {}", elf_calories[0]);
+    println!("{}", elf_calories[0]);
     // Second solution
-    println!("Top three: {}", total_of_three);
+    println!("{}", total_of_three);
 }
