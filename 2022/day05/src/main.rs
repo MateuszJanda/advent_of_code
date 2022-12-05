@@ -25,14 +25,10 @@ fn read_levels() -> Option<Vec<Option<char>>> {
                 }
 
                 let value = stripped_line.as_bytes()[idx] as char;
-                if value == '1' {
-                    return Some(vec![]);
-                }
-
-                if value != ' ' {
-                    level.push(Some(value))
-                } else {
-                    level.push(None);
+                match value {
+                    '1' => return Some(vec![]),
+                    ' ' => level.push(None),
+                    _ => level.push(Some(value)),
                 }
             }
 
