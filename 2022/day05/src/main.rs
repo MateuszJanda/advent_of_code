@@ -95,19 +95,17 @@ fn main() {
         stacks2[to].append(&mut tmp_stack);
     }
 
-    let mut result1 = String::new();
-    for stack in &stacsk1 {
-        if !stack.is_empty() {
-            result1.push(*stack.back().unwrap())
-        }
-    }
+    let result1: String = stacsk1
+        .iter()
+        .filter(|stack| !stack.is_empty())
+        .map(|stack| stack.back().unwrap())
+        .collect();
 
-    let mut result2 = String::new();
-    for stack in &stacks2 {
-        if !stack.is_empty() {
-            result2.push(*stack.back().unwrap())
-        }
-    }
+    let result2: String = stacks2
+        .iter()
+        .filter(|stack| !stack.is_empty())
+        .map(|stack| stack.back().unwrap())
+        .collect();
 
     println!("{}", result1);
     println!("{}", result2);
