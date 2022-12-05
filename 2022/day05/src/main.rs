@@ -65,7 +65,8 @@ fn read_moves() -> Option<(usize, usize, usize)> {
 }
 
 fn main() {
-    let mut stacks = vec![VecDeque::<char>::new(); NUM_OF_STACKS];
+    let mut stacsk1 = vec![VecDeque::<char>::new(); NUM_OF_STACKS];
+    let mut stacks2 = vec![VecDeque::<char>::new(); NUM_OF_STACKS];
 
     while let Some(level) = read_levels() {
         if level.is_empty() {
@@ -75,7 +76,10 @@ fn main() {
         for (idx, ch) in level.iter().enumerate() {
             match ch {
                 None => (),
-                Some(c) => stacks[idx].push_front(*c),
+                Some(c) => {
+                    stacsk1[idx].push_front(*c);
+                    stacks2[idx].push_front(*c);
+                }
             }
         }
     }
@@ -84,18 +88,31 @@ fn main() {
         let from = from - 1;
         let to = to - 1;
 
+        let mut tmp_stack = VecDeque::new();
         for _ in 0..ammount {
-            let val = stacks[from].pop_back().unwrap();
-            stacks[to].push_back(val);
+            let val1 = stacsk1[from].pop_back().unwrap();
+            stacsk1[to].push_back(val1);
+
+            let val2 = stacks2[from].pop_back().unwrap();
+            tmp_stack.push_front(val2);
         }
+        stacks2[to].append(&mut tmp_stack);
     }
 
-    let mut result = String::new();
-    for stack in &stacks {
+    let mut result1 = String::new();
+    for stack in &stacsk1 {
         if !stack.is_empty() {
-            result.push(*stack.back().unwrap())
+            result1.push(*stack.back().unwrap())
         }
     }
 
-    println!("{}", result);
+    let mut result2 = String::new();
+    for stack in &stacks2 {
+        if !stack.is_empty() {
+            result2.push(*stack.back().unwrap())
+        }
+    }
+
+    println!("{}", result1);
+    println!("{}", result2);
 }
