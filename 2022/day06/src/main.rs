@@ -34,7 +34,7 @@ fn main() {
 
         if result2.is_none() && window2.len() == 14 {
             let letters: HashSet<char> = window2.iter().cloned().collect();
-            if result2.is_none() && letters.len() == 14 {
+            if letters.len() == 14 {
                 result2 = Some(idx + 1);
             }
 
