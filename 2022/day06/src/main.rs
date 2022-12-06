@@ -23,22 +23,22 @@ fn main() {
         window1.push_back(ch);
         window2.push_back(ch);
 
-        if result1.is_none() && window1.len() > 4 {
-            window1.pop_front();
-
+        if result1.is_none() && window1.len() == 4 {
             let letters: HashSet<char> = window1.iter().cloned().collect();
             if letters.len() == 4 {
                 result1 = Some(idx + 1);
             }
+
+            window1.pop_front();
         }
 
-        if result2.is_none() && window2.len() > 14 {
-            window2.pop_front();
-
+        if result2.is_none() && window2.len() == 14 {
             let letters: HashSet<char> = window2.iter().cloned().collect();
             if result2.is_none() && letters.len() == 14 {
                 result2 = Some(idx + 1);
             }
+
+            window2.pop_front();
         }
     }
 
