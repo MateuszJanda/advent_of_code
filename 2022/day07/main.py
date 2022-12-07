@@ -22,7 +22,7 @@ def read_line() -> Optional[Tuple[str, str]]:
 
 
 class Node:
-    """Filesystem nodes."""
+    """Filesystem node."""
 
     def __init__(
         self,
