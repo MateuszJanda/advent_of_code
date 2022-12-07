@@ -1,24 +1,26 @@
 # Author:  mateusz.janda@gmail.com
 # Ad maiorem Dei gloriam
 
+from typing import Iterator
 from typing import Optional
 from typing import Tuple
 
 
-def read_line() -> Optional[Tuple[str, str]]:
+def read_line() -> Iterator[Tuple[str, str]]:
     """Read line from stdin."""
-    try:
-        line = input()
-    except EOFError as _:
-        return None
+    while True:
+        try:
+            line = input()
+        except EOFError as _:
+            return
 
-    words = line.strip().split()
-    if line.startswith("$ cd"):
-        return words[1], words[2]
-    if line.startswith("$ ls"):
-        return words[1], None
-
-    return words[0], words[1]
+        words = line.strip().split()
+        if line.startswith("$ cd"):
+            yield words[1], words[2]
+        elif line.startswith("$ ls"):
+            yield words[1], None
+        else:
+            yield words[0], words[1]
 
 
 class Node:
@@ -79,14 +81,7 @@ def main() -> None:
     current_node = root
 
     # Build node tree
-    while True:
-        data = read_line()
-        if data is None:
-            break
-
-        info = data[0]
-        name = data[1]
-
+    for info, name in read_line():
         if info == "ls":
             pass
         elif info == "cd" and name == "/":
