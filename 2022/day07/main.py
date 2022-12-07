@@ -15,7 +15,7 @@ def read_line() -> Optional[Tuple[str, str]]:
     words = line.strip().split()
     if line.startswith("$ cd"):
         return words[1], words[2]
-    elif line.startswith("$ ls"):
+    if line.startswith("$ ls"):
         return words[1], None
 
     return words[0], words[1]
@@ -68,6 +68,11 @@ class Node:
         raise Exception("Folder not found")
 
 
+SIZE_LIMIT = 100_000
+UNUSED_SIZE_LIMIT = 30_000_000
+DISK_SIZE = 70_000_000
+
+
 def main() -> None:
     """Main body."""
     root = Node("/", is_file=False)
@@ -93,22 +98,30 @@ def main() -> None:
         elif meta_data.isdigit():
             current_node.add_file(name, int(meta_data))
 
+    # Part 1
     dfs = Dfs()
-    dfs.search(root)
-    print(dfs.result)
+    root_size = dfs.search(root)
+    print(dfs.all_below_limit)
 
-
-SIZE_LIMIT = 100000
+    # Part 2
+    unused_size = DISK_SIZE - root_size
+    size_to_free = UNUSED_SIZE_LIMIT - unused_size
+    dfs = Dfs(size_to_free)
+    dfs.search_folder_to_delete(root)
+    print(dfs.best_to_delete)
 
 
 class Dfs:
     """Depth First Search."""
 
-    def __init__(self) -> None:
-        self.result = 0
+    def __init__(self, size_to_free: Optional[int] = None) -> None:
+        self.size_to_free = size_to_free
+
+        self.all_below_limit = 0
+        self.best_to_delete = DISK_SIZE
 
     def search(self, folder_node: "Node") -> int:
-        """Search all folders."""
+        """Search all folders and find this below SIZE_LIMIT."""
         folder_size = 0
 
         for node in folder_node.nodes:
@@ -118,7 +131,22 @@ class Dfs:
                 folder_size += node.size
 
         if folder_size < SIZE_LIMIT:
-            self.result += folder_size
+            self.all_below_limit += folder_size
+
+        return folder_size
+
+    def search_folder_to_delete(self, folder_node: "Node") -> int:
+        """Search all folder, and find best folder to delete."""
+        folder_size = 0
+
+        for node in folder_node.nodes:
+            if not node.is_file:
+                folder_size = self.search(node)
+            else:
+                folder_size += node.size
+
+        if folder_size > self.size_to_free and folder_size < self.best_to_delete:
+            self.best_to_delete = folder_size
 
         return folder_size
 
