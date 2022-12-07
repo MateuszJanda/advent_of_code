@@ -100,7 +100,7 @@ def main() -> None:
 
     # Part 1
     dfs = Dfs()
-    root_size = dfs.search(root)
+    root_size = dfs.search_below_limit(root)
     print(dfs.all_below_limit)
 
     # Part 2
@@ -120,13 +120,13 @@ class Dfs:
         self.all_below_limit = 0
         self.best_to_delete = DISK_SIZE
 
-    def search(self, folder_node: "Node") -> int:
+    def search_below_limit(self, folder_node: "Node") -> int:
         """Search all folders and find this below SIZE_LIMIT."""
         folder_size = 0
 
         for node in folder_node.nodes:
             if not node.is_file:
-                folder_size += self.search(node)
+                folder_size += self.search_below_limit(node)
             else:
                 folder_size += node.size
 
