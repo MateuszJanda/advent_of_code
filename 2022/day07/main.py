@@ -9,7 +9,7 @@ def read_line() -> Optional[Tuple[str, str]]:
     """Read line from stdin."""
     try:
         line = input()
-    except Exception as _:
+    except EOFError as _:
         return None
 
     words = line.strip().split()
@@ -24,8 +24,9 @@ def read_line() -> Optional[Tuple[str, str]]:
 class Node:
     """Filesystem nodes."""
 
-    def __init__(self, name: str, is_file: bool, parent_node: "Node"=None,
-                size: int=None) -> None:
+    def __init__(self, name: str, is_file: bool,
+                parent_node: Optional["Node"]=None,
+                size: Optional[int]=None) -> None:
         self.name = name
         self.is_file = is_file
         self.parent_node = parent_node
@@ -37,7 +38,7 @@ class Node:
         """Add folder if doesn't exist yet."""
         for node in self.nodes:
             if node.name == name and not node.is_folder:
-                return None
+                return
 
         node = Node(name, is_file=False, parent_node=self)
         self.nodes.append(node)
@@ -61,9 +62,6 @@ class Node:
                 return node
 
         raise Exception("Folder not found")
-
-
-SIZE_LIMIT = 100000
 
 
 def main() -> None:
@@ -93,9 +91,33 @@ def main() -> None:
         elif meta_data.isdigit():
             current_node.add_file(name, int(meta_data))
 
-        print(meta_data, name)
+    dfs = Dfs()
+    dfs.search(root)
+    print(dfs.result)
 
 
+SIZE_LIMIT = 100000
+
+class Dfs:
+    """Depth First Search."""
+
+    def __init__(self) -> None:
+        self.result = 0
+
+    def search(self, folder_node: "Node") -> int:
+        """Search all folders."""
+        folder_size = 0
+
+        for node in folder_node.nodes:
+            if not node.is_file:
+                folder_size += self.search(node)
+            else:
+                folder_size += node.size
+
+        if folder_size < SIZE_LIMIT:
+            self.result += folder_size
+
+        return folder_size
 
 
 
