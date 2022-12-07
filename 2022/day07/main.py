@@ -105,8 +105,8 @@ def main() -> None:
 
     # Part 2
     unused_size = DISK_SIZE - root_size
-    size_to_free = UNUSED_SIZE_LIMIT - unused_size
-    dfs = Dfs(size_to_free)
+    space_to_delete = UNUSED_SIZE_LIMIT - unused_size
+    dfs = Dfs(space_to_delete)
     dfs.search_folder_to_delete(root)
     print(dfs.best_to_delete)
 
@@ -114,8 +114,8 @@ def main() -> None:
 class Dfs:
     """Depth First Search."""
 
-    def __init__(self, size_to_free: Optional[int] = None) -> None:
-        self.size_to_free = size_to_free
+    def __init__(self, space_to_delete: Optional[int] = None) -> None:
+        self.space_to_delete = space_to_delete
 
         self.all_below_limit = 0
         self.best_to_delete = DISK_SIZE
@@ -141,11 +141,11 @@ class Dfs:
 
         for node in folder_node.nodes:
             if not node.is_file:
-                folder_size = self.search(node)
+                folder_size += self.search_folder_to_delete(node)
             else:
                 folder_size += node.size
 
-        if folder_size > self.size_to_free and folder_size < self.best_to_delete:
+        if folder_size >= self.space_to_delete and folder_size < self.best_to_delete:
             self.best_to_delete = folder_size
 
         return folder_size
