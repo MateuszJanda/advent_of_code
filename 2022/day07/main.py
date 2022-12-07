@@ -80,23 +80,23 @@ def main() -> None:
 
     # Build node tree
     while True:
-        words = read_line()
-        if words is None:
+        data = read_line()
+        if data is None:
             break
 
-        meta_data = words[0]
-        name = words[1]
+        data_type = data[0]
+        name = data[1]
 
-        if meta_data == "cd" and name == "/":
+        if data_type == "ls":
             pass
-        elif meta_data == "ls":
-            pass
-        elif meta_data == "cd":
+        elif data_type == "cd" and name == "/":
+            current_node = root
+        elif data_type == "cd":
             current_node = current_node.go_to_folder(name)
-        elif meta_data == "dir":
+        elif data_type == "dir":
             current_node.add_folder(name)
-        elif meta_data.isdigit():
-            current_node.add_file(name, int(meta_data))
+        elif data_type.isdigit():
+            current_node.add_file(name, int(data_type))
 
     # Part 1
     dfs = Dfs()
