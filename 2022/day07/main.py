@@ -13,9 +13,9 @@ def read_line() -> Optional[Tuple[str, str]]:
         return None
 
     words = line.strip().split()
-    if line.startswith('$ cd'):
+    if line.startswith("$ cd"):
         return words[1], words[2]
-    elif line.startswith('$ ls'):
+    elif line.startswith("$ ls"):
         return words[1], None
 
     return words[0], words[1]
@@ -24,9 +24,13 @@ def read_line() -> Optional[Tuple[str, str]]:
 class Node:
     """Filesystem nodes."""
 
-    def __init__(self, name: str, is_file: bool,
-                parent_node: Optional["Node"]=None,
-                size: Optional[int]=None) -> None:
+    def __init__(
+        self,
+        name: str,
+        is_file: bool,
+        parent_node: Optional["Node"] = None,
+        size: Optional[int] = None,
+    ) -> None:
         self.name = name
         self.is_file = is_file
         self.parent_node = parent_node
@@ -66,8 +70,6 @@ class Node:
 
 def main() -> None:
     """Main body."""
-    print("Hello world")
-
     root = Node("/", is_file=False)
     current_node = root
 
@@ -82,7 +84,7 @@ def main() -> None:
 
         if meta_data == "cd" and name == "/":
             pass
-        elif meta_data == 'ls':
+        elif meta_data == "ls":
             pass
         elif meta_data == "cd":
             current_node = current_node.go_to_folder(name)
@@ -97,6 +99,7 @@ def main() -> None:
 
 
 SIZE_LIMIT = 100000
+
 
 class Dfs:
     """Depth First Search."""
@@ -118,7 +121,6 @@ class Dfs:
             self.result += folder_size
 
         return folder_size
-
 
 
 if __name__ == "__main__":
