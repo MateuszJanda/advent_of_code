@@ -84,19 +84,19 @@ def main() -> None:
         if data is None:
             break
 
-        data_type = data[0]
+        info = data[0]
         name = data[1]
 
-        if data_type == "ls":
+        if info == "ls":
             pass
-        elif data_type == "cd" and name == "/":
+        elif info == "cd" and name == "/":
             current_node = root
-        elif data_type == "cd":
+        elif info == "cd":
             current_node = current_node.go_to_folder(name)
-        elif data_type == "dir":
+        elif info == "dir":
             current_node.add_folder(name)
-        elif data_type.isdigit():
-            current_node.add_file(name, int(data_type))
+        elif info.isdigit():
+            current_node.add_file(name, int(info))
 
     # Part 1
     dfs = Dfs()
