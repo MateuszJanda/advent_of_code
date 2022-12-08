@@ -49,40 +49,42 @@ impl Tree {
     }
 
     fn score(&self, row: usize, col: usize, trees: &Vec<Vec<Tree>>) -> i32 {
+        let val = trees[row][col].value;
+
+        // Up
         let mut s1 = 0;
-        for r in (row + 1)..trees.len() {
-            if trees[row][col].value >= trees[r][col].value {
-                break;
-            }
-
-            s1 += 1;
-        }
-
-        let mut s2 = 0;
         for r in (0..row).rev() {
-            if trees[row][col].value >= trees[r][col].value {
+            s1 += 1;
+            if val <= trees[r][col].value {
                 break;
             }
-
-            s2 += 1;
         }
 
+        // Left
+        let mut s2 = 0;
+        for c in (0..col).rev() {
+            s2 += 1;
+            if val <= trees[row][c].value {
+                break;
+            }
+        }
+
+        // Right
         let mut s3 = 0;
         for c in (col + 1)..trees[0].len() {
-            if trees[row][col].value >= trees[row][c].value {
+            s3 += 1;
+            if val <= trees[row][c].value {
                 break;
             }
-
-            s3 += 1;
         }
 
+        // Down
         let mut s4 = 0;
-        for c in (0..col).rev() {
-            if trees[row][col].value >= trees[row][c].value {
+        for r in (row + 1)..trees.len() {
+            s4 += 1;
+            if val <= trees[r][col].value {
                 break;
             }
-
-            s4 += 1;
         }
 
         s1 * s2 * s3 * s4
@@ -137,8 +139,10 @@ fn main() {
 
     let mut visible = 0;
     let mut best_score = 0;
-    for row in (0..trees.len()).rev() {
-        for col in (0..trees[0].len()).rev() {
+
+    // Part 2: 99 * 99 * (98 + 98) == 1920996 ~= 1.9 * 10**6 steps, so brute force is fine
+    for row in 0..trees.len() {
+        for col in 0..trees[0].len() {
             if trees[row][col].is_visible() {
                 visible += 1;
             }
