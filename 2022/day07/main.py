@@ -30,40 +30,40 @@ class Node:
         self,
         name: str,
         is_file: bool,
-        parent_node: Optional["Node"] = None,
+        parent: "Node",
         size: Optional[int] = None,
     ) -> None:
         self.name = name
         self.is_file = is_file
-        self.parent_node = parent_node
+        self.parent = parent
         self.size = size
 
-        self.nodes = []
+        self.children = []
 
     def add_folder(self, name: str) -> None:
         """Add folder if doesn't exist yet."""
-        for node in self.nodes:
+        for node in self.children:
             if node.name == name and not node.is_folder:
                 return
 
-        node = Node(name, is_file=False, parent_node=self)
-        self.nodes.append(node)
+        node = Node(name, is_file=False, parent=self)
+        self.children.append(node)
 
     def add_file(self, name: str, size: int) -> None:
         """Add file to current directory."""
-        for node in self.nodes:
+        for node in self.children:
             if node.name == name and node.is_file:
                 return
 
-        node = Node(name, is_file=True, parent_node=self, size=size)
-        self.nodes.append(node)
+        node = Node(name, is_file=True, parent=self, size=size)
+        self.children.append(node)
 
     def go_to_folder(self, name: str) -> "Node":
         """Get folder node."""
         if name == "..":
-            return self.parent_node
+            return self.parent
 
-        for node in self.nodes:
+        for node in self.children:
             if node.name == name and not node.is_file:
                 return node
 
@@ -77,7 +77,7 @@ DISK_SIZE = 70_000_000
 
 def main() -> None:
     """Main body."""
-    root = Node("/", is_file=False)
+    root = Node("/", is_file=False, parent=None)
     current_node = root
 
     # Build node tree
@@ -119,7 +119,7 @@ class Dfs:
         """Search all folders and find this below SIZE_LIMIT."""
         folder_size = 0
 
-        for node in folder_node.nodes:
+        for node in folder_node.children:
             if not node.is_file:
                 folder_size += self.search_folders_below_limit(node)
             else:
@@ -134,7 +134,7 @@ class Dfs:
         """Search all folder, and find best folder to delete."""
         folder_size = 0
 
-        for node in folder_node.nodes:
+        for node in folder_node.children:
             if not node.is_file:
                 folder_size += self.search_folder_to_delete(node)
             else:
