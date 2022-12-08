@@ -140,7 +140,8 @@ fn main() {
     let mut visible = 0;
     let mut best_score = 0;
 
-    // Part 2: 99 * 99 * (98 + 98) == 1920996 ~= 1.9 * 10**6 steps, so brute force is fine
+    // Part 1: O(3*n*m), probably can be O(2*n*m)
+    // Part 2: Last step: 99 * 99 * (98 + 98) == 1920996 ~= 1.9 * 10**6. So brute force is fine.
     for row in 0..trees.len() {
         for col in 0..trees[0].len() {
             if trees[row][col].is_visible() {
