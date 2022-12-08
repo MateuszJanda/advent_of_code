@@ -47,6 +47,46 @@ impl Tree {
             || self.value > self.height_right
             || self.value > self.height_left
     }
+
+    fn score(&self, row: usize, col: usize, trees: &Vec<Vec<Tree>>) -> i32 {
+        let mut s1 = 0;
+        for r in (row + 1)..trees.len() {
+            if trees[row][col].value >= trees[r][col].value {
+                break;
+            }
+
+            s1 += 1;
+        }
+
+        let mut s2 = 0;
+        for r in (0..row).rev() {
+            if trees[row][col].value >= trees[r][col].value {
+                break;
+            }
+
+            s2 += 1;
+        }
+
+        let mut s3 = 0;
+        for c in (col + 1)..trees[0].len() {
+            if trees[row][col].value >= trees[row][c].value {
+                break;
+            }
+
+            s3 += 1;
+        }
+
+        let mut s4 = 0;
+        for c in (0..col).rev() {
+            if trees[row][col].value >= trees[row][c].value {
+                break;
+            }
+
+            s4 += 1;
+        }
+
+        s1 * s2 * s3 * s4
+    }
 }
 
 fn main() {
@@ -96,15 +136,17 @@ fn main() {
     }
 
     let mut visible = 0;
+    let mut best_score = 0;
     for row in (0..trees.len()).rev() {
         for col in (0..trees[0].len()).rev() {
             if trees[row][col].is_visible() {
                 visible += 1;
             }
+
+            best_score = std::cmp::max(best_score, trees[row][col].score(row, col, &trees));
         }
     }
 
     println!("{}", visible);
+    println!("{}", best_score);
 }
-
-
