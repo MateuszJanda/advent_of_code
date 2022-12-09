@@ -85,14 +85,21 @@ fn move_tail(head: &Position, tail: &mut Position) {
     }
 }
 
+const NUM_OF_KNOTS: usize = 10;
+const TAIL_INDEX: usize = NUM_OF_KNOTS - 1;
+
 fn main() {
-    let mut positions = HashSet::<Position>::new();
+    let mut positions1 = HashSet::<Position>::new();
     let mut head = Position::new(0, 0);
     let mut tail = Position::new(0, 0);
 
-    positions.insert(tail.clone());
+    let mut positions2 = HashSet::<Position>::new();
+    let mut rope = vec![Position::new(0, 0); NUM_OF_KNOTS];
+
+    positions1.insert(tail.clone());
 
     while let Some((dir, steps)) = read_motions() {
+        // Part 1
         for _ in 0..steps {
             match dir {
                 'R' => head.x += 1,
@@ -102,9 +109,27 @@ fn main() {
                 _ => panic!("Unknown direction"),
             }
             move_tail(&head, &mut tail);
-            positions.insert(tail.clone());
+            positions1.insert(tail.clone());
+        }
+
+        // Part 2
+        for _ in 0..steps {
+            match dir {
+                'R' => rope[0].x += 1,
+                'L' => rope[0].x -= 1,
+                'U' => rope[0].y += 1,
+                'D' => rope[0].y -= 1,
+                _ => panic!("Unknown direction"),
+            }
+            for idx in 1..NUM_OF_KNOTS {
+                let h = rope[idx - 1].clone();
+                move_tail(&h, &mut rope[idx]);
+            }
+
+            positions2.insert(rope[TAIL_INDEX].clone());
         }
     }
 
-    println!("{}", positions.len());
+    println!("{}", positions1.len());
+    println!("{}", positions2.len());
 }
