@@ -50,7 +50,7 @@ impl Position {
         (self.y - other.y).abs() > 1
     }
 
-    fn is_hirizontal_gap(&self, other: &Position) -> bool {
+    fn is_horizontal_gap(&self, other: &Position) -> bool {
         (self.x - other.x).abs() > 1
     }
 }
@@ -68,6 +68,16 @@ fn move_tail(head: &Position, tail: &mut Position) {
                 false => tail.x = head.x - 1,
             },
         }
+    } else if head.is_vertical_gap(&tail) && head.is_horizontal_gap(&tail) {
+        match head.y < tail.y {
+            true => tail.y = head.y + 1,
+            false => tail.y = head.y - 1,
+        }
+
+        match head.x < tail.x {
+            true => tail.x = head.x + 1,
+            false => tail.x = head.x - 1,
+        }
     } else if head.is_vertical_gap(&tail) {
         match head.y < tail.y {
             true => tail.y = head.y + 1,
@@ -75,7 +85,7 @@ fn move_tail(head: &Position, tail: &mut Position) {
         }
 
         tail.x = head.x
-    } else if head.is_hirizontal_gap(&tail) {
+    } else if head.is_horizontal_gap(&tail) {
         match head.x < tail.x {
             true => tail.x = head.x + 1,
             false => tail.x = head.x - 1,
