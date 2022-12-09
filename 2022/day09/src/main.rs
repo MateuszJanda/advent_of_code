@@ -59,26 +59,26 @@ fn move_tail(head: &Position, tail: &mut Position) {
     if head.is_on_cross(&tail) && !head.is_close(&tail) {
         match head.x == tail.x {
             true => match head.y < tail.y {
-                true => tail.y -= 1,
-                false => tail.y += 1,
+                true => tail.y = head.y + 1,
+                false => tail.y = head.y - 1,
             },
             // Case when, head.y == tail.y
             false => match head.x < tail.x {
-                true => tail.x -= 1,
-                false => tail.x += 1,
+                true => tail.x = head.x + 1,
+                false => tail.x = head.x - 1,
             },
         }
     } else if head.is_vertical_gap(&tail) {
         match head.y < tail.y {
-            true => tail.y -= 1,
-            false => tail.y += 1,
+            true => tail.y = head.y + 1,
+            false => tail.y = head.y - 1,
         }
 
         tail.x = head.x
     } else if head.is_hirizontal_gap(&tail) {
         match head.x < tail.x {
-            true => tail.x -= 1,
-            false => tail.x += 1,
+            true => tail.x = head.x + 1,
+            false => tail.x = head.x - 1,
         }
 
         tail.y = head.y
