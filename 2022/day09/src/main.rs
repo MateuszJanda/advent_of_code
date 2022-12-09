@@ -24,7 +24,7 @@ fn read_motions() -> Option<(char, i32)> {
     }
 }
 
-#[derive(Eq, Hash, PartialEq, Clone)]
+#[derive(Eq, Hash, PartialEq, Clone, Debug)]
 struct Position {
     x: i32,
     y: i32,
@@ -41,81 +41,47 @@ impl Position {
 
         (x_delta == 0 || x_delta == 1) && (y_delta == 0 || y_delta == 1)
     }
-}
 
-fn move_right(
-    head: &mut Position,
-    tail: &mut Position,
-    steps: i32,
-    positions: &mut HashSet<Position>,
-) {
-    let mut old_head = Position::new(head.x, head.y);
-    for _ in 0..steps {
-        head.x += 1;
+    fn is_on_cross(&self, other: &Position) -> bool {
+        self.x == other.x || self.y == other.y
+    }
 
-        if !head.is_close(&tail) {
-            *tail = old_head;
-            positions.insert(tail.clone());
-        }
+    fn is_vertical_gap(&self, other: &Position) -> bool {
+        (self.y - other.y).abs() > 1
+    }
 
-        old_head = head.clone();
+    fn is_hirizontal_gap(&self, other: &Position) -> bool {
+        (self.x - other.x).abs() > 1
     }
 }
 
-fn move_left(
-    head: &mut Position,
-    tail: &mut Position,
-    steps: i32,
-    positions: &mut HashSet<Position>,
-) {
-    let mut old_head = Position::new(head.x, head.y);
-    for _ in 0..steps {
-        head.x -= 1;
-
-        if !head.is_close(&tail) {
-            *tail = old_head;
-            positions.insert(tail.clone());
+fn move_tail(head: &Position, tail: &mut Position) {
+    if head.is_on_cross(&tail) && !head.is_close(&tail) {
+        match head.x == tail.x {
+            true => match head.y < tail.y {
+                true => tail.y -= 1,
+                false => tail.y += 1,
+            },
+            // Case when, head.y == tail.y
+            false => match head.x < tail.x {
+                true => tail.x -= 1,
+                false => tail.x += 1,
+            },
+        }
+    } else if head.is_vertical_gap(&tail) {
+        match head.y < tail.y {
+            true => tail.y -= 1,
+            false => tail.y += 1,
         }
 
-        old_head = head.clone();
-    }
-}
-
-fn move_up(
-    head: &mut Position,
-    tail: &mut Position,
-    steps: i32,
-    positions: &mut HashSet<Position>,
-) {
-    let mut old_head = Position::new(head.x, head.y);
-    for _ in 0..steps {
-        head.y += 1;
-
-        if !head.is_close(&tail) {
-            *tail = old_head;
-            positions.insert(tail.clone());
+        tail.x = head.x
+    } else if head.is_hirizontal_gap(&tail) {
+        match head.x < tail.x {
+            true => tail.x -= 1,
+            false => tail.x += 1,
         }
 
-        old_head = head.clone();
-    }
-}
-
-fn move_down(
-    head: &mut Position,
-    tail: &mut Position,
-    steps: i32,
-    positions: &mut HashSet<Position>,
-) {
-    let mut old_head = Position::new(head.x, head.y);
-    for _ in 0..steps {
-        head.y -= 1;
-
-        if !head.is_close(&tail) {
-            *tail = old_head;
-            positions.insert(tail.clone());
-        }
-
-        old_head = head.clone();
+        tail.y = head.y
     }
 }
 
@@ -127,12 +93,16 @@ fn main() {
     positions.insert(tail.clone());
 
     while let Some((dir, steps)) = read_motions() {
-        match dir {
-            'R' => move_right(&mut head, &mut tail, steps, &mut positions),
-            'L' => move_left(&mut head, &mut tail, steps, &mut positions),
-            'U' => move_up(&mut head, &mut tail, steps, &mut positions),
-            'D' => move_down(&mut head, &mut tail, steps, &mut positions),
-            _ => panic!("Unknown direction"),
+        for _ in 0..steps {
+            match dir {
+                'R' => head.x += 1,
+                'L' => head.x -= 1,
+                'U' => head.y += 1,
+                'D' => head.y -= 1,
+                _ => panic!("Unknown direction"),
+            }
+            move_tail(&head, &mut tail);
+            positions.insert(tail.clone());
         }
     }
 
