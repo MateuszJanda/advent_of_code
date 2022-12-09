@@ -97,6 +97,7 @@ fn main() {
     let mut rope = vec![Position::new(0, 0); NUM_OF_KNOTS];
 
     positions1.insert(tail.clone());
+    positions2.insert(rope[TAIL_INDEX].clone());
 
     while let Some((dir, steps)) = read_motions() {
         // Part 1
