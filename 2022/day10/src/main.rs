@@ -32,10 +32,36 @@ fn read_instructions() -> Option<Instruction> {
     }
 }
 
+fn signal_strength(cycle: i32, memory: &mut Vec<i32>) -> i32 {
+    if (cycle - 20) % 40 == 0 {
+        return cycle * memory.iter().sum::<i32>();
+    }
 
+    0
+}
 
 fn main() {
-    while let Some(instr) = read_instructions() {
+    let mut cycle = 0;
+    let mut memory = vec![1];
+    let mut result = 0;
 
+    while let Some(instr) = read_instructions() {
+        match instr {
+            Instruction::Addx(val) => {
+                cycle += 1;
+                result += signal_strength(cycle, &mut memory);
+
+                cycle += 1;
+
+                result += signal_strength(cycle, &mut memory);
+                memory.push(val);
+            }
+            Instruction::Noop => {
+                cycle += 1;
+                result += signal_strength(cycle, &mut memory);
+            }
+        }
     }
+
+    println!("{}", result);
 }
