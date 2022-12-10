@@ -52,8 +52,8 @@ fn main() {
                 result += signal_strength(cycle, &mut memory);
 
                 cycle += 1;
-
                 result += signal_strength(cycle, &mut memory);
+
                 memory.push(val);
             }
             Instruction::Noop => {
