@@ -1,6 +1,7 @@
 // Author:  mateusz.janda@gmail.com
 // Ad maiorem Dei gloriam
 
+use std::cmp::Ordering;
 use std::collections::HashSet;
 use std::io;
 
@@ -55,43 +56,38 @@ impl Position {
     }
 }
 
+fn calc_y(head: &Position, tail: &Position) -> i32 {
+    match head.y.cmp(&tail.y) {
+        Ordering::Less => head.y + 1,
+        Ordering::Greater => head.y - 1,
+        Ordering::Equal => panic!("head.y and tail.y can't be equal"),
+    }
+}
+
+fn calc_x(head: &Position, tail: &Position) -> i32 {
+    match head.x.cmp(&tail.x) {
+        Ordering::Less => head.x + 1,
+        Ordering::Greater => head.x - 1,
+        Ordering::Equal => panic!("head.x and tail.x can't be equal"),
+    }
+}
+
 fn move_tail(head: &Position, tail: &mut Position) {
     if head.is_on_cross(&tail) && !head.is_close(&tail) {
         match head.x == tail.x {
-            true => match head.y < tail.y {
-                true => tail.y = head.y + 1,
-                false => tail.y = head.y - 1,
-            },
+            true => tail.y = calc_y(head, tail),
             // Case when, head.y == tail.y
-            false => match head.x < tail.x {
-                true => tail.x = head.x + 1,
-                false => tail.x = head.x - 1,
-            },
+            false => tail.x = calc_x(head, tail),
         }
     } else if head.is_vertical_gap(&tail) && head.is_horizontal_gap(&tail) {
-        match head.y < tail.y {
-            true => tail.y = head.y + 1,
-            false => tail.y = head.y - 1,
-        }
-
-        match head.x < tail.x {
-            true => tail.x = head.x + 1,
-            false => tail.x = head.x - 1,
-        }
+        tail.y = calc_y(head, tail);
+        tail.x = calc_x(head, tail);
     } else if head.is_vertical_gap(&tail) {
-        match head.y < tail.y {
-            true => tail.y = head.y + 1,
-            false => tail.y = head.y - 1,
-        }
-
-        tail.x = head.x
+        tail.y = calc_y(head, tail);
+        tail.x = head.x;
     } else if head.is_horizontal_gap(&tail) {
-        match head.x < tail.x {
-            true => tail.x = head.x + 1,
-            false => tail.x = head.x - 1,
-        }
-
-        tail.y = head.y
+        tail.y = head.y;
+        tail.x = calc_x(head, tail);
     }
 }
 
