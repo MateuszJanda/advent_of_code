@@ -32,36 +32,58 @@ fn read_instructions() -> Option<Instruction> {
     }
 }
 
-fn signal_strength(cycle: i32, memory: &mut Vec<i32>) -> i32 {
+fn signal_strength(cycle: i32, register: i32) -> i32 {
     if (cycle - 20) % 40 == 0 {
-        return cycle * memory.iter().sum::<i32>();
+        return cycle * register;
     }
 
     0
 }
 
+fn draw(cycle: i32, register: i32, buffer: &mut Vec<Vec<char>>) {
+    // Cycle start from 1, and (x, y) position start from 0
+    let y = (cycle - 1) / 40;
+    let x = (cycle - 1) % 40;
+
+    buffer[y as usize][x as usize] = match x == register - 1 || x == register || x == register + 1 {
+        true => '#',
+        false => '.',
+    }
+}
+
 fn main() {
     let mut cycle = 0;
-    let mut memory = vec![1];
+    let mut register = 1;
     let mut result = 0;
+    let mut buffer = vec![vec!['.'; 40]; 6];
 
     while let Some(instr) = read_instructions() {
         match instr {
             Instruction::Addx(val) => {
+                // Start first cycle
                 cycle += 1;
-                result += signal_strength(cycle, &mut memory);
+                result += signal_strength(cycle, register);
+                draw(cycle, register, &mut buffer);
 
+                // Start second cycle
                 cycle += 1;
-                result += signal_strength(cycle, &mut memory);
+                result += signal_strength(cycle, register);
+                draw(cycle, register, &mut buffer);
 
-                memory.push(val);
+                // Add in third cycle
+                register += val;
             }
             Instruction::Noop => {
                 cycle += 1;
-                result += signal_strength(cycle, &mut memory);
+                result += signal_strength(cycle, register);
+                draw(cycle, register, &mut buffer);
             }
         }
     }
 
     println!("{}", result);
+
+    for line in buffer {
+        println!("{}", line.iter().collect::<String>());
+    }
 }
