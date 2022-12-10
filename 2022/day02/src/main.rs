@@ -3,7 +3,7 @@
 
 use std::io;
 
-fn read_chars() -> Option<Vec<char>> {
+fn read_chars() -> Option<(char, char)> {
     let mut line = String::new();
     io::stdin().read_line(&mut line).unwrap();
     match line.strip_suffix("\n") {
@@ -17,7 +17,7 @@ fn read_chars() -> Option<Vec<char>> {
                 .split_ascii_whitespace()
                 .map(|s| s.as_bytes()[0] as char)
                 .collect::<Vec<_>>();
-            Some(ch)
+            Some((ch[0], ch[1]))
         }
     }
 }
@@ -83,10 +83,7 @@ fn main() {
     let mut result1 = 0;
     let mut result2 = 0;
 
-    while let Some(v) = read_chars() {
-        let ch1 = v[0];
-        let ch2 = v[1];
-
+    while let Some((ch1, ch2)) = read_chars() {
         result1 += rate_element(ch2).unwrap();
         result1 += rate_result(ch1, ch2);
 
