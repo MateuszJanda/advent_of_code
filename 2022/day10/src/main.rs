@@ -32,8 +32,12 @@ fn read_instructions() -> Option<Instruction> {
     }
 }
 
+const FIRST_CYCLE: i32 = 20;
+const CYCLE_LENGTH: i32 = 40;
+const LINES_IN_BUFFER: usize = 6;
+
 fn signal_strength(cycle: i32, register: i32) -> i32 {
-    if (cycle - 20) % 40 == 0 {
+    if (cycle - FIRST_CYCLE) % CYCLE_LENGTH == 0 {
         return cycle * register;
     }
 
@@ -42,8 +46,8 @@ fn signal_strength(cycle: i32, register: i32) -> i32 {
 
 fn draw(cycle: i32, register: i32, buffer: &mut Vec<Vec<char>>) {
     // Cycle start from 1, and (x, y) position start from 0, so we must to subtract 1
-    let y = (cycle - 1) / 40;
-    let x = (cycle - 1) % 40;
+    let y = (cycle - 1) / CYCLE_LENGTH;
+    let x = (cycle - 1) % CYCLE_LENGTH;
 
     buffer[y as usize][x as usize] = match x == register - 1 || x == register || x == register + 1 {
         true => '#',
@@ -55,7 +59,7 @@ fn main() {
     let mut cycle = 0;
     let mut register = 1;
     let mut result = 0;
-    let mut buffer = vec![vec!['.'; 40]; 6];
+    let mut buffer = vec![vec!['.'; CYCLE_LENGTH as usize]; LINES_IN_BUFFER];
 
     while let Some(instr) = read_instructions() {
         match instr {
