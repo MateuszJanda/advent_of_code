@@ -41,7 +41,7 @@ fn signal_strength(cycle: i32, register: i32) -> i32 {
 }
 
 fn draw(cycle: i32, register: i32, buffer: &mut Vec<Vec<char>>) {
-    // Cycle start from 1, and (x, y) position start from 0
+    // Cycle start from 1, and (x, y) position start from 0, so we must to subtract 1
     let y = (cycle - 1) / 40;
     let x = (cycle - 1) % 40;
 
