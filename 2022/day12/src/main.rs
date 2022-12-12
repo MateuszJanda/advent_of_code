@@ -76,15 +76,20 @@ fn main() {
 
     let mut visited = vec![vec![false; width]; height];
 
+    let mut out = vec![vec![' ' as u8; width]; height];
+
     let mut min_path_length = i32::MAX;
     while let Some(Reverse(pair)) = priority_queue.pop() {
         let node_a = pair.node;
+        // println!("{} {}", graph[node_a.y][node_a.x] as char, priority_queue.len());
 
         if visited[node_a.y][node_a.x] {
             continue;
         }
 
         visited[node_a.y][node_a.x] = true;
+
+        out[node_a.y][node_a.x] = graph[node_a.y][node_a.x];
 
         if graph[node_a.y][node_a.x] == 'E' as u8 {
             min_path_length = std::cmp::min(min_path_length, pair.distance);
@@ -110,10 +115,10 @@ fn main() {
             // Skip if no edge between nodes
             let val_a = graph[node_a.y][node_a.x];
             let val_b = graph[node_b.y][node_b.x];
-            if !(val_a == 'z' as u8 && val_b == 'E' as u8)
-                && val_a != val_b
-                && val_b != val_a + 1
-                && !(val_a == 'S' as u8 && val_b == 'a' as u8)
+            if !(val_a == 'S' as u8 && val_b == 'a' as u8)
+                && !(val_b <= val_a)
+                && !(val_b == val_a + 1)
+                && !(val_a == 'z' as u8 && val_b == 'E' as u8)
             {
                 continue;
             }
@@ -126,6 +131,14 @@ fn main() {
                 }));
             }
         }
+    }
+
+    for line in out {
+        println!(
+            "{}",
+            // line.iter().map(|val| val.to_string()).collect::<String>()
+            String::from_utf8(line).unwrap()
+        );
     }
 
     println!("{}", min_path_length);
