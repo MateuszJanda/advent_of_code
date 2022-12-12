@@ -128,29 +128,45 @@ fn main() {
 
     for _ in 0..NUMBER_OF_ROUNDS {
         let mut monkeys2 = monkeys.clone();
-        for monkey in monkeys2.iter_mut() {
-            monkey.items.clear();
-        }
+        // for monkey in monkeys2.iter_mut() {
+        //     monkey.items.clear();
+        // }
 
-        for monkey in monkeys.iter() {
-            for old_value in monkey.items.iter() {
-                monkey_business[monkey.number] += 1;
+        // for monkey in monkeys.iter() {
+        for number in 0..monkeys.len() {
+            monkeys2[number].items.clear();
+            // println!("{}: {:?}", monkey.number, monkey.items);
 
-                let mut new_value = match monkey.operator {
-                    '+' => old_value + get_value(&monkey.operator_val, old_value),
-                    '*' => old_value * get_value(&monkey.operator_val, old_value),
+            // for old_value in monkeys[number].items.iter() {
+            for idx in 0..monkeys[number].items.len() {
+                monkey_business[number] += 1;
+
+                let old_value = monkeys[number].items[idx];
+                let mut new_value = match monkeys[number].operator {
+                    '+' => old_value + get_value(&monkeys[number].operator_val, &old_value),
+                    '*' => old_value * get_value(&monkeys[number].operator_val, &old_value),
                     _ => panic!("Unsupported operator."),
                 };
 
                 new_value = new_value / 3;
 
-                match new_value % monkey.test == 0 {
-                    true => monkeys2[monkey.monkey_true].items.push(new_value),
-                    false => monkeys2[monkey.monkey_false].items.push(new_value),
+                let monkey_true = monkeys[number].monkey_true;
+                let monkey_false = monkeys[number].monkey_false;
+
+                match new_value % monkeys[number].test == 0 {
+                    true => match monkey_true <= number {
+                        true => monkeys2[monkey_true].items.push(new_value),
+                        false => monkeys[monkey_true].items.push(new_value),
+                    },
+                    false => match monkey_false <= number {
+                        true => monkeys2[monkey_false].items.push(new_value),
+                        false => monkeys[monkey_false].items.push(new_value),
+                    },
                 }
             }
         }
 
+        println!("----");
         monkeys = monkeys2;
     }
 
