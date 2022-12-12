@@ -4,6 +4,7 @@
 use std::cmp::Ordering;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
+use std::collections::VecDeque;
 use std::io;
 
 fn read_string() -> Option<Vec<u8>> {
@@ -28,17 +29,6 @@ struct Position {
     y: usize,
 }
 
-fn find_start_node_node(graph: &Vec<Vec<u8>>) -> Option<Position> {
-    for (y, row) in graph.iter().enumerate() {
-        for (x, ch) in row.iter().enumerate() {
-            if *ch == 'S' as u8 {
-                return Some(Position { x, y });
-            }
-        }
-    }
-
-    None
-}
 
 #[derive(PartialEq, Eq, PartialOrd, Clone, Debug)]
 struct Pair {
@@ -52,15 +42,51 @@ impl Ord for Pair {
     }
 }
 
-// #algorithm: Dijkstra’s algorithm
-fn main() {
-    // Build graph
-    let mut graph = vec![];
-    while let Some(line) = read_string() {
-        graph.push(line);
+fn find_node(graph: &Vec<Vec<u8>>, name: char) -> Option<Position> {
+    for (y, row) in graph.iter().enumerate() {
+        for (x, ch) in row.iter().enumerate() {
+            if *ch == name as u8 {
+                return Some(Position { x, y });
+            }
+        }
     }
 
-    let start_node = find_start_node_node(&graph).unwrap();
+    None
+}
+
+fn is_edge(graph: &Vec<Vec<u8>>, node_a: &Position, node_b: &Position) -> bool {
+    let val_a = graph[node_a.y][node_a.x];
+    let val_b = graph[node_b.y][node_b.x];
+    return (val_a == 'S' as u8 && val_b == 'a' as u8)
+        || (val_b.is_ascii_lowercase() && val_b <= val_a)
+        || (val_b == val_a + 1)
+        || (val_a == 'z' as u8 && val_b == 'E' as u8)
+}
+
+fn build_node(
+    graph: &Vec<Vec<u8>>,
+    node: &Position,
+    shift_y: i32,
+    shift_x: i32,
+) -> Option<Position> {
+    let width = graph[0].len() as i32;
+    let height = graph.len() as i32;
+
+    let y = node.y as i32;
+    let x = node.x as i32;
+
+    if y + shift_y < 0 || x + shift_x < 0 || y + shift_y >= height || x + shift_x >= width {
+        return None;
+    }
+
+    Some(Position {
+        x: (x + shift_x) as usize,
+        y: (y + shift_y) as usize,
+    })
+}
+
+fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
+    let start_node = find_node(&graph, 'S').unwrap();
 
     let width = graph[0].len();
     let height = graph.len();
@@ -76,17 +102,17 @@ fn main() {
 
     let mut visited = vec![vec![false; width]; height];
 
-    let mut end = Position{x: 0, y: 0};
+    let mut end = Position { x: 0, y: 0 };
     let mut out = vec![vec![' ' as u8; width]; height];
-    let mut parent = vec![vec![Position{x: 0, y: 0}; width]; height];
+    let mut parent = vec![vec![Position { x: 0, y: 0 }; width]; height];
 
     let mut min_path_length = i32::MAX;
     while let Some(Reverse(pair)) = priority_queue.pop() {
         let node_a = pair.node;
 
-        // if visited[node_a.y][node_a.x] {
-        //     continue;
-        // }
+        if visited[node_a.y][node_a.x] {
+            continue;
+        }
 
         visited[node_a.y][node_a.x] = true;
 
@@ -102,28 +128,13 @@ fn main() {
 
         for (shift_y, shift_x) in [(-1, 0), (0, 1), (1, 0), (0, -1)] {
             // Skip if out of border
-            if (shift_y < 0 && node_a.y == 0) || (shift_x < 0 && node_a.x == 0) {
-                continue;
-            }
-
-            let node_b = Position {
-                x: (node_a.x as i32 + shift_x) as usize,
-                y: (node_a.y as i32 + shift_y) as usize,
+            let node_b = match build_node(&graph, &node_a, shift_y, shift_x) {
+                Some(n) => n,
+                None => continue,
             };
 
-            // Skip if out of border
-            if node_b.y >= height || node_b.x >= width {
-                continue;
-            }
-
             // Skip if no edge between nodes
-            let val_a = graph[node_a.y][node_a.x];
-            let val_b = graph[node_b.y][node_b.x];
-            if !(val_a == 'S' as u8 && val_b == 'a' as u8)
-                && !(val_b.is_ascii_lowercase() && val_b <= val_a)
-                && !(val_b == val_a + 1)
-                && !(val_a == 'z' as u8 && val_b == 'E' as u8)
-            {
+            if !is_edge(&graph, &node_a, &node_b) {
                 continue;
             }
 
@@ -150,7 +161,6 @@ fn main() {
         n = parent[n.y][n.x].clone();
     }
 
-
     for line in out {
         println!(
             "{}",
@@ -159,6 +169,62 @@ fn main() {
         );
     }
 
+    return min_path_length;
+}
+
+fn bfs(graph: &Vec<Vec<u8>>) -> i32 {
+    let start_node = find_node(graph, 'S').unwrap();
+    let mut queue = VecDeque::new();
+
+    let width = graph[0].len();
+    let height = graph.len();
+
+    let mut distance = vec![vec![i32::MAX; width]; height];
+
+    queue.push_back(Pair {
+        node: start_node.clone(),
+        distance: 0,
+    });
+
+    while let Some(pair) = queue.pop_front() {
+        let node_a = pair.node;
+
+        if pair.distance > distance[node_a.y][node_a.x] {
+            continue;
+        }
+        distance[node_a.y][node_a.x] = pair.distance;
+
+        for (shift_y, shift_x) in [(-1, 0), (0, 1), (1, 0), (0, -1)] {
+            let node_b = match build_node(&graph, &node_a, shift_y, shift_x) {
+                Some(n) => n,
+                None => continue,
+            };
+
+            if !is_edge(&graph, &node_a, &node_b) {
+                continue;
+            }
+
+            queue.push_back(Pair {
+                node: node_b,
+                distance: pair.distance + 1,
+            });
+        }
+    }
+
+    let end_node = find_node(graph, 'E').unwrap();
+    distance[end_node.y][end_node.x]
+}
+
+// #algorithm: Dijkstra’s algorithm
+fn main() {
+    // Build graph
+    let mut graph = vec![];
+    while let Some(line) = read_string() {
+        graph.push(line);
+    }
+
+    // let min_path_length = dijkstra(&graph);
+    let min_path_length = bfs(&graph);
 
     println!("{}", min_path_length);
 }
