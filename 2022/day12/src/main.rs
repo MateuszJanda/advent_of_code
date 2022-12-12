@@ -76,15 +76,17 @@ fn main() {
 
     let mut visited = vec![vec![false; width]; height];
 
+    let mut end = Position{x: 0, y: 0};
     let mut out = vec![vec![' ' as u8; width]; height];
+    let mut parent = vec![vec![Position{x: 0, y: 0}; width]; height];
 
     let mut min_path_length = i32::MAX;
     while let Some(Reverse(pair)) = priority_queue.pop() {
         let node_a = pair.node;
 
-        if visited[node_a.y][node_a.x] {
-            continue;
-        }
+        // if visited[node_a.y][node_a.x] {
+        //     continue;
+        // }
 
         visited[node_a.y][node_a.x] = true;
 
@@ -92,7 +94,10 @@ fn main() {
 
         if graph[node_a.y][node_a.x] == 'E' as u8 {
             min_path_length = std::cmp::min(min_path_length, pair.distance);
+            end = node_a;
             continue;
+            // min_path_length = pair.distance;
+            // break;
         }
 
         for (shift_y, shift_x) in [(-1, 0), (0, 1), (1, 0), (0, -1)] {
@@ -124,6 +129,7 @@ fn main() {
 
             if distance[node_a.y][node_a.x] + 1 < distance[node_b.y][node_b.x] {
                 distance[node_b.y][node_b.x] = distance[node_a.y][node_a.x] + 1;
+                parent[node_b.y][node_b.x] = node_a.clone();
                 priority_queue.push(Reverse(Pair {
                     node: node_b.clone(),
                     distance: distance[node_b.y][node_b.x],
@@ -132,13 +138,27 @@ fn main() {
         }
     }
 
-    // for line in out {
-    //     println!(
-    //         "{}",
-    //         // line.iter().map(|val| val.to_string()).collect::<String>()
-    //         String::from_utf8(line).unwrap()
-    //     );
-    // }
+    let mut out = vec![vec![' ' as u8; width]; height];
+    let mut n = end;
+    loop {
+        out[n.y][n.x] = graph[n.y][n.x];
+
+        if graph[n.y][n.x] == 'S' as u8 {
+            break;
+        }
+
+        n = parent[n.y][n.x].clone();
+    }
+
+
+    for line in out {
+        println!(
+            "{}",
+            // line.iter().map(|val| val.to_string()).collect::<String>()
+            String::from_utf8(line).unwrap()
+        );
+    }
+
 
     println!("{}", min_path_length);
 }
