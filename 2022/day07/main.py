@@ -75,6 +75,7 @@ UNUSED_SIZE_LIMIT = 30_000_000
 DISK_SIZE = 70_000_000
 
 
+# #algorithm: Depth-first search (DFS)
 def main() -> None:
     """Main body."""
     root = Node("/", is_file=False, parent=None)

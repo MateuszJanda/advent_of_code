@@ -3,6 +3,7 @@
 
 use std::io;
 
+// #algorithm: Dijkstra’s algorithm
 fn main() {
     println!("Hello world!")
 }
