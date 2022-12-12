@@ -29,7 +29,6 @@ struct Position {
     y: usize,
 }
 
-
 #[derive(PartialEq, Eq, PartialOrd, Clone, Debug)]
 struct Pair {
     node: Position,
@@ -60,7 +59,7 @@ fn is_edge(graph: &Vec<Vec<u8>>, node_a: &Position, node_b: &Position) -> bool {
     return (val_a == 'S' as u8 && val_b == 'a' as u8)
         || (val_b.is_ascii_lowercase() && val_b <= val_a)
         || (val_b == val_a + 1)
-        || (val_a == 'z' as u8 && val_b == 'E' as u8)
+        || (val_a == 'z' as u8 && val_b == 'E' as u8);
 }
 
 fn build_node(
@@ -109,10 +108,9 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
     while let Some(Reverse(pair)) = priority_queue.pop() {
         let node_a = pair.node;
 
-        if visited[node_a.y][node_a.x] {
-            continue;
-        }
-
+        // if visited[node_a.y][node_a.x] {
+        //     continue;
+        // }
         visited[node_a.y][node_a.x] = true;
 
         out[node_a.y][node_a.x] = graph[node_a.y][node_a.x];
@@ -175,6 +173,7 @@ fn bfs(graph: &Vec<Vec<u8>>) -> i32 {
     let width = graph[0].len();
     let height = graph.len();
 
+    let mut visited = vec![vec![false; width]; height];
     let mut distance = vec![vec![i32::MAX; width]; height];
 
     queue.push_back(Pair {
@@ -185,7 +184,12 @@ fn bfs(graph: &Vec<Vec<u8>>) -> i32 {
     while let Some(pair) = queue.pop_front() {
         let node_a = pair.node;
 
-        if pair.distance > distance[node_a.y][node_a.x] {
+        if visited[node_a.y][node_a.x] {
+            continue;
+        }
+        visited[node_a.y][node_a.x] = true;
+
+        if pair.distance >= distance[node_a.y][node_a.x] {
             continue;
         }
         distance[node_a.y][node_a.x] = pair.distance;
@@ -219,8 +223,9 @@ fn main() {
         graph.push(line);
     }
 
-    // let min_path_length = dijkstra(&graph);
-    let min_path_length = bfs(&graph);
+    let min_path_length1 = dijkstra(&graph);
+    let min_path_length2 = bfs(&graph);
 
-    println!("{}", min_path_length);
+    println!("{}", min_path_length1);
+    println!("{}", min_path_length2);
 }
