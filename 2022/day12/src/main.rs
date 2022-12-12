@@ -81,7 +81,6 @@ fn main() {
     let mut min_path_length = i32::MAX;
     while let Some(Reverse(pair)) = priority_queue.pop() {
         let node_a = pair.node;
-        // println!("{} {}", graph[node_a.y][node_a.x] as char, priority_queue.len());
 
         if visited[node_a.y][node_a.x] {
             continue;
@@ -116,7 +115,7 @@ fn main() {
             let val_a = graph[node_a.y][node_a.x];
             let val_b = graph[node_b.y][node_b.x];
             if !(val_a == 'S' as u8 && val_b == 'a' as u8)
-                && !(val_b <= val_a)
+                && !(val_b.is_ascii_lowercase() && val_b <= val_a)
                 && !(val_b == val_a + 1)
                 && !(val_a == 'z' as u8 && val_b == 'E' as u8)
             {
@@ -133,13 +132,13 @@ fn main() {
         }
     }
 
-    for line in out {
-        println!(
-            "{}",
-            // line.iter().map(|val| val.to_string()).collect::<String>()
-            String::from_utf8(line).unwrap()
-        );
-    }
+    // for line in out {
+    //     println!(
+    //         "{}",
+    //         // line.iter().map(|val| val.to_string()).collect::<String>()
+    //         String::from_utf8(line).unwrap()
+    //     );
+    // }
 
     println!("{}", min_path_length);
 }
