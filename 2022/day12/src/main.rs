@@ -102,7 +102,6 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
 
     let mut visited = vec![vec![false; width]; height];
 
-    let mut end = Position { x: 0, y: 0 };
     let mut out = vec![vec![' ' as u8; width]; height];
     let mut parent = vec![vec![Position { x: 0, y: 0 }; width]; height];
 
@@ -119,11 +118,8 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
         out[node_a.y][node_a.x] = graph[node_a.y][node_a.x];
 
         if graph[node_a.y][node_a.x] == 'E' as u8 {
-            min_path_length = std::cmp::min(min_path_length, pair.distance);
-            end = node_a;
-            continue;
-            // min_path_length = pair.distance;
-            // break;
+            min_path_length = pair.distance;
+            break;
         }
 
         for (shift_y, shift_x) in [(-1, 0), (0, 1), (1, 0), (0, -1)] {
@@ -150,7 +146,7 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
     }
 
     let mut out = vec![vec![' ' as u8; width]; height];
-    let mut n = end;
+    let mut n = find_node(graph, 'E').unwrap();
     loop {
         out[n.y][n.x] = graph[n.y][n.x];
 
