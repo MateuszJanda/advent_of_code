@@ -119,9 +119,11 @@ const NUMBER_OF_ROUNDS: i32 = 20;
 
 fn main() {
     let mut monkeys = vec![];
+    let mut monkey_business = vec![];
 
     while let Some(monkey) = read_monkey() {
         monkeys.push(monkey);
+        monkey_business.push(0);
     }
 
     for _ in 0..NUMBER_OF_ROUNDS {
@@ -131,12 +133,12 @@ fn main() {
         }
 
         for monkey in monkeys.iter() {
-            monkeys2[monkey.number].items.clear();
-
             for old_value in monkey.items.iter() {
+                monkey_business[monkey.number] += 1;
+
                 let mut new_value = match monkey.operator {
                     '+' => old_value + get_value(&monkey.operator_val, old_value),
-                    '*' => old_value + get_value(&monkey.operator_val, old_value),
+                    '*' => old_value * get_value(&monkey.operator_val, old_value),
                     _ => panic!("Unsupported operator."),
                 };
 
@@ -144,9 +146,7 @@ fn main() {
 
                 match new_value % monkey.test == 0 {
                     true => monkeys2[monkey.monkey_true].items.push(new_value),
-                    false => {
-                        monkeys2[monkey.monkey_false].items.push(new_value);
-                    }
+                    false => monkeys2[monkey.monkey_false].items.push(new_value),
                 }
             }
         }
@@ -154,11 +154,6 @@ fn main() {
         monkeys = monkeys2;
     }
 
-    let mut monkey_business = monkeys
-        .iter()
-        .map(|m| m.items.len())
-        .collect::<Vec<usize>>();
     monkey_business.sort_by(|a, b| b.cmp(a));
-
-    println!("{}", monkey_business[0] + monkey_business[1]);
+    println!("{}", monkey_business[0] * monkey_business[1]);
 }
