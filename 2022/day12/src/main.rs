@@ -57,7 +57,7 @@ fn is_edge(graph: &Vec<Vec<u8>>, node_a: &Position, node_b: &Position) -> bool {
     let val_a = graph[node_a.y][node_a.x];
     let val_b = graph[node_b.y][node_b.x];
     return (val_a == 'S' as u8 && val_b == 'a' as u8)
-        || (val_b.is_ascii_lowercase() && val_b <= val_a)
+        || (val_b.is_ascii_lowercase() && val_b == val_a)
         || (val_b == val_a + 1)
         || (val_a == 'z' as u8 && val_b == 'E' as u8);
 }
@@ -104,9 +104,13 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
     let mut out = vec![vec![' ' as u8; width]; height];
     let mut parent = vec![vec![Position { x: 0, y: 0 }; width]; height];
 
-    let mut min_path_length = i32::MAX;
+    let mut last_char = 'S' as u8;
+
+    let mut min_distance = i32::MAX;
     while let Some(Reverse(pair)) = priority_queue.pop() {
         let node_a = pair.node;
+
+        print!("{}", graph[node_a.y][node_a.x] as char);
 
         // if visited[node_a.y][node_a.x] {
         //     continue;
@@ -116,8 +120,18 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
         out[node_a.y][node_a.x] = graph[node_a.y][node_a.x];
 
         if graph[node_a.y][node_a.x] == 'E' as u8 {
-            min_path_length = pair.distance;
+            println!("BUKA 1");
+            min_distance = pair.distance;
             break;
+        } else if graph[node_a.y][node_a.x] == last_char {
+            println!("BUKA 2");
+            min_distance = std::cmp::min(min_distance, pair.distance);
+        } else if (graph[node_a.y][node_a.x] == 'a' as u8 && last_char == 'S' as u8)
+            || graph[node_a.y][node_a.x] == last_char + 1
+        {
+            println!("BUKA 3");
+            last_char = graph[node_a.y][node_a.x];
+            min_distance = pair.distance;
         }
 
         for (shift_y, shift_x) in [(-1, 0), (0, 1), (1, 0), (0, -1)] {
@@ -143,6 +157,8 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
         }
     }
 
+    println!("last_char {}", last_char as char);
+
     let mut out = vec![vec![' ' as u8; width]; height];
     let mut n = find_node(graph, 'E').unwrap();
     loop {
@@ -163,7 +179,7 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
         );
     }
 
-    return min_path_length;
+    return min_distance;
 }
 
 fn bfs(graph: &Vec<Vec<u8>>) -> i32 {
@@ -223,9 +239,9 @@ fn main() {
         graph.push(line);
     }
 
-    let min_path_length1 = dijkstra(&graph);
-    let min_path_length2 = bfs(&graph);
+    let min_distance1 = dijkstra(&graph);
+    let min_distance2 = bfs(&graph);
 
-    println!("{}", min_path_length1);
-    println!("{}", min_path_length2);
+    println!("{}", min_distance1);
+    println!("{}", min_distance2);
 }

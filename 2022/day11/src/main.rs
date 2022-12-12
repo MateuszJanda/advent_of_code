@@ -28,13 +28,13 @@ fn read_monkey_number() -> Option<usize> {
     )
 }
 
-fn read_items() -> Option<Vec<i32>> {
+fn read_items() -> Option<Vec<u128>> {
     Some(
         read_string()?
             .replace("  Starting items: ", "")
             .split(", ")
-            .map(|val| val.parse::<i32>().unwrap())
-            .collect::<Vec<i32>>(),
+            .map(|val| val.parse::<u128>().unwrap())
+            .collect::<Vec<u128>>(),
     )
 }
 
@@ -48,11 +48,11 @@ fn read_operation() -> Option<(char, String)> {
     Some((words[0].as_bytes()[0] as char, words[1].clone()))
 }
 
-fn read_test() -> Option<i32> {
+fn read_test() -> Option<u128> {
     Some(
         read_string()?
             .replace("  Test: divisible by ", "")
-            .parse::<i32>()
+            .parse::<u128>()
             .unwrap(),
     )
 }
@@ -78,10 +78,10 @@ fn read_monkey_num_false() -> Option<usize> {
 #[derive(Clone, Debug)]
 struct Monkey {
     _num: usize,
-    items: Vec<i32>,
+    items: Vec<u128>,
     operator: char,
     operator_val: String,
-    test: i32,
+    test: u128,
     monkey_num_true: usize,
     monkey_num_false: usize,
 }
@@ -108,40 +108,36 @@ fn read_monkey() -> Option<Monkey> {
     })
 }
 
-fn get_value(operator_val: &String, old_value: &i32) -> i32 {
+fn get_value(operator_val: &String, old_value: &u128) -> u128 {
     match operator_val.as_str() {
         "old" => *old_value,
-        _ => operator_val.parse::<i32>().unwrap(),
+        _ => operator_val.parse::<u128>().unwrap(),
     }
 }
 
-const NUMBER_OF_ROUNDS: i32 = 20;
+fn monkey_business(monkeys: Vec<Monkey>, should_divided: bool, rounds: i32) -> u128 {
+    let mut levels = vec![0; monkeys.len()];
+    let mut monkeys_curr = monkeys;
 
-fn main() {
-    let mut monkeys_curr = vec![];
-    let mut monkey_business = vec![];
-
-    while let Some(monkey) = read_monkey() {
-        monkeys_curr.push(monkey);
-        monkey_business.push(0);
-    }
-
-    for _ in 0..NUMBER_OF_ROUNDS {
+    for _ in 0..rounds {
         let mut monkeys_next = monkeys_curr.clone();
         for num in 0..monkeys_curr.len() {
             monkeys_next[num].items.clear();
 
             for idx in 0..monkeys_curr[num].items.len() {
-                monkey_business[num] += 1;
+                levels[num] += 1;
 
                 let old_value = monkeys_curr[num].items[idx];
+                println!("{}", old_value);
                 let mut new_value = match monkeys_curr[num].operator {
                     '+' => old_value + get_value(&monkeys_curr[num].operator_val, &old_value),
                     '*' => old_value * get_value(&monkeys_curr[num].operator_val, &old_value),
                     _ => panic!("Unsupported operator."),
                 };
 
-                new_value = new_value / 3;
+                if should_divided {
+                    new_value = new_value / 3;
+                }
 
                 let monkey_num_true = monkeys_curr[num].monkey_num_true;
                 let monkey_num_false = monkeys_curr[num].monkey_num_false;
@@ -162,6 +158,17 @@ fn main() {
         monkeys_curr = monkeys_next;
     }
 
-    monkey_business.sort_by(|a, b| b.cmp(a));
-    println!("{}", monkey_business[0] * monkey_business[1]);
+    levels.sort_by(|a, b| b.cmp(a));
+    levels[0] * levels[1]
+}
+
+fn main() {
+    let mut monkeys = vec![];
+
+    while let Some(monkey) = read_monkey() {
+        monkeys.push(monkey);
+    }
+
+    println!("{}", monkey_business(monkeys.clone(), true, 20));
+    println!("{}", monkey_business(monkeys.clone(), false, 10000));
 }
