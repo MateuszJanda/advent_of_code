@@ -65,7 +65,7 @@ fn main() {
     let width = graph[0].len();
     let height = graph.len();
     let mut distance = vec![vec![i32::MAX; width]; height];
-    distance[start_node.y][start_node.x] = 1;
+    distance[start_node.y][start_node.x] = 0;
 
     let mut priority_queue = BinaryHeap::new();
 
@@ -76,7 +76,7 @@ fn main() {
 
     let mut visited = vec![vec![false; width]; height];
 
-    let mut min_path_length = 0;
+    let mut min_path_length = i32::MAX;
     while let Some(Reverse(pair)) = priority_queue.pop() {
         let node_a = pair.node;
 
@@ -91,7 +91,7 @@ fn main() {
             continue;
         }
 
-        for (shift_y, shift_x) in [(1, 0), (0, 1), (-1, 0), (0, -1)] {
+        for (shift_y, shift_x) in [(-1, 0), (0, 1), (1, 0), (0, -1)] {
             // Skip if out of border
             if (shift_y < 0 && node_a.y == 0) || (shift_x < 0 && node_a.x == 0) {
                 continue;
@@ -110,7 +110,11 @@ fn main() {
             // Skip if no edge between nodes
             let val_a = graph[node_a.y][node_a.x];
             let val_b = graph[node_b.y][node_b.x];
-            if val_b != 'E' as u8 && val_a != val_b && val_b != val_a + 1 {
+            if !(val_a == 'z' as u8 && val_b == 'E' as u8)
+                && val_a != val_b
+                && val_b != val_a + 1
+                && !(val_a == 'S' as u8 && val_b == 'a' as u8)
+            {
                 continue;
             }
 
