@@ -100,9 +100,8 @@ fn main() {
     let mut result1 = 0;
 
     while let Some((left, right)) = read_packets() {
-        match check_order(&left, &right) {
-            Ordering::Less => result1 += counter,
-            _ => (),
+        if check_order(&left, &right) == Ordering::Less {
+            result1 += counter;
         }
         counter += 1;
 
