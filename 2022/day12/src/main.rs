@@ -6,7 +6,7 @@ use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::io;
 
-fn read_string() -> Option<Vec<u8>> {
+fn read_chars() -> Option<Vec<u8>> {
     let mut line = String::new();
     io::stdin().read_line(&mut line).unwrap();
     match line.strip_suffix("\n") {
@@ -163,7 +163,7 @@ fn dijkstra(
 // #algorithm: Dijkstra’s algorithm
 fn main() {
     let mut graph = vec![];
-    while let Some(line) = read_string() {
+    while let Some(line) = read_chars() {
         graph.push(line);
     }
 
