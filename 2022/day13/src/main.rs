@@ -33,7 +33,7 @@ fn read_packets() -> Option<(String, String)> {
 fn split_packet(packet: &String) -> Vec<String> {
     let mut bracket_counter = 0;
     let mut start_value = None;
-    let mut result = vec![];
+    let mut result1 = vec![];
 
     for (idx, ch) in packet.chars().enumerate() {
         match ch {
@@ -46,8 +46,8 @@ fn split_packet(packet: &String) -> Vec<String> {
             ']' => {
                 if bracket_counter == 1 {
                     match start_value {
-                        Some(start) => result.push(packet[start..idx].to_string()),
-                        None => result.push("".to_string()),
+                        Some(start) => result1.push(packet[start..idx].to_string()),
+                        None => result1.push("".to_string()),
                     };
                     start_value = None;
                 }
@@ -55,7 +55,7 @@ fn split_packet(packet: &String) -> Vec<String> {
             }
             ',' => {
                 if bracket_counter == 1 {
-                    result.push(packet[start_value.unwrap()..idx].to_string());
+                    result1.push(packet[start_value.unwrap()..idx].to_string());
                     start_value = None;
                 }
             }
@@ -68,7 +68,7 @@ fn split_packet(packet: &String) -> Vec<String> {
         }
     }
 
-    result
+    result1
 }
 
 fn check_order(left: &String, right: &String) -> Ordering {
@@ -78,14 +78,14 @@ fn check_order(left: &String, right: &String) -> Ordering {
     let it = left_vec.iter().zip(right_vec.iter());
 
     for (l_str, r_str) in it {
-        let result = match (l_str.parse::<i32>(), r_str.parse::<i32>()) {
+        let result1 = match (l_str.parse::<i32>(), r_str.parse::<i32>()) {
             (Ok(l_val), Ok(r_val)) => l_val.cmp(&r_val),
             (Ok(l_val), Err(_)) => check_order(&("[".to_owned() + &l_val.to_string() + "]"), r_str),
             (Err(_), Ok(r_val)) => check_order(l_str, &("[".to_owned() + &r_val.to_string() + "]")),
             (Err(_), Err(_)) => check_order(l_str, r_str),
         };
 
-        match result {
+        match result1 {
             Ordering::Equal => (),
             cmp => return cmp,
         };
@@ -95,15 +95,37 @@ fn check_order(left: &String, right: &String) -> Ordering {
 }
 
 fn main() {
+    let mut all_packets = vec![];
+
+    // Part 1
     let mut counter = 1;
-    let mut result = 0;
+    let mut result1 = 0;
+
     while let Some((left, right)) = read_packets() {
         match check_order(&left, &right) {
-            Ordering::Less => result += counter,
+            Ordering::Less => result1 += counter,
             _ => (),
         }
         counter += 1;
+
+        all_packets.push(left);
+        all_packets.push(right)
     }
 
-    println!("{}", result);
+    // Part 2
+    let divider1 = "[[2]]".to_string();
+    let divider2 = "[[6]]".to_string();
+    all_packets.push(divider1.clone());
+    all_packets.push(divider2.clone());
+    all_packets.sort_by(|a, b| check_order(a, b));
+
+    let mut result2 = 1;
+    for (idx, packet) in all_packets.iter().enumerate() {
+        if packet == &divider1 || packet == &divider2 {
+            result2 *= idx + 1;
+        }
+    }
+
+    println!("{}", result1);
+    println!("{}", result2);
 }
