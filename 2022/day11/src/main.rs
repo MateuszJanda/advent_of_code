@@ -115,7 +115,7 @@ fn get_value(operator_val: &String, old_value: &u128) -> u128 {
     }
 }
 
-fn monkey_business(monkeys: Vec<Monkey>, should_divided: bool, rounds: i32) -> u128 {
+fn monkey_business(monkeys: Vec<Monkey>, should_divide: bool, rounds: i32) -> u128 {
     let mut levels = vec![0; monkeys.len()];
     let mut monkeys_curr = monkeys;
 
@@ -139,7 +139,7 @@ fn monkey_business(monkeys: Vec<Monkey>, should_divided: bool, rounds: i32) -> u
                     _ => panic!("Unsupported operator."),
                 };
 
-                if should_divided {
+                if should_divide {
                     new_value = new_value / 3;
                 }
 
