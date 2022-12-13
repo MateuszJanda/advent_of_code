@@ -2,7 +2,6 @@
 // Ad maiorem Dei gloriam
 
 use std::cmp::Ordering;
-
 use std::io;
 
 fn read_string() -> Option<String> {
