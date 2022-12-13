@@ -119,6 +119,11 @@ fn monkey_business(monkeys: Vec<Monkey>, should_divided: bool, rounds: i32) -> u
     let mut levels = vec![0; monkeys.len()];
     let mut monkeys_curr = monkeys;
 
+    let mut modulo = 1;
+    for monkey in monkeys_curr.iter() {
+        modulo *= monkey.test;
+    }
+
     for _ in 0..rounds {
         let mut monkeys_next = monkeys_curr.clone();
         for num in 0..monkeys_curr.len() {
@@ -127,8 +132,7 @@ fn monkey_business(monkeys: Vec<Monkey>, should_divided: bool, rounds: i32) -> u
             for idx in 0..monkeys_curr[num].items.len() {
                 levels[num] += 1;
 
-                let old_value = monkeys_curr[num].items[idx];
-                println!("{}", old_value);
+                let old_value = monkeys_curr[num].items[idx] % modulo;
                 let mut new_value = match monkeys_curr[num].operator {
                     '+' => old_value + get_value(&monkeys_curr[num].operator_val, &old_value),
                     '*' => old_value * get_value(&monkeys_curr[num].operator_val, &old_value),
