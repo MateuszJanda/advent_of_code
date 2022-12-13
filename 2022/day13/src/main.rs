@@ -75,16 +75,15 @@ fn check_order(left: &String, right: &String) -> Ordering {
     let right_vec = split_packet(right);
 
     let it = left_vec.iter().zip(right_vec.iter());
-
     for (l_str, r_str) in it {
-        let result1 = match (l_str.parse::<i32>(), r_str.parse::<i32>()) {
+        let result = match (l_str.parse::<i32>(), r_str.parse::<i32>()) {
             (Ok(l_val), Ok(r_val)) => l_val.cmp(&r_val),
             (Ok(l_val), Err(_)) => check_order(&("[".to_owned() + &l_val.to_string() + "]"), r_str),
             (Err(_), Ok(r_val)) => check_order(l_str, &("[".to_owned() + &r_val.to_string() + "]")),
             (Err(_), Err(_)) => check_order(l_str, r_str),
         };
 
-        match result1 {
+        match result {
             Ordering::Equal => (),
             cmp => return cmp,
         };
