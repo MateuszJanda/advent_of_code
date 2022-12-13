@@ -4,7 +4,6 @@
 use std::cmp::Ordering;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
-use std::collections::VecDeque;
 use std::io;
 
 fn read_string() -> Option<Vec<u8>> {
@@ -53,16 +52,16 @@ fn find_node(graph: &Vec<Vec<u8>>, name: char) -> Option<Position> {
     None
 }
 
-fn is_edge(graph: &Vec<Vec<u8>>, node_a: &Position, node_b: &Position) -> bool {
-    let val_a = graph[node_a.y][node_a.x];
-    let val_b = graph[node_b.y][node_b.x];
-    return (val_a == 'S' as u8 && val_b == 'a' as u8)
-        || (val_b.is_ascii_lowercase() && val_b <= val_a)
-        || (val_b == val_a + 1)
-        || (val_a == 'z' as u8 && val_b == 'E' as u8);
-}
+// fn is_edge(graph: &Vec<Vec<u8>>, node_a: &Position, node_b: &Position) -> bool {
+//     let val_a = graph[node_a.y][node_a.x];
+//     let val_b = graph[node_b.y][node_b.x];
+//     return (val_a == 'S' as u8 && val_b == 'a' as u8)
+//         || (val_b.is_ascii_lowercase() && val_b <= val_a)
+//         || (val_b == val_a + 1)
+//         || (val_a == 'z' as u8 && val_b == 'E' as u8);
+// }
 
-fn is_edge2(graph: &Vec<Vec<u8>>, node_a: &Position, node_b: &Position) -> bool {
+fn is_edge_up(graph: &Vec<Vec<u8>>, node_a: &Position, node_b: &Position) -> bool {
     let val_a = match graph[node_a.y][node_a.x] as char {
         'S' => 'a' as u8,
         'E' => 'z' as u8,
@@ -79,6 +78,22 @@ fn is_edge2(graph: &Vec<Vec<u8>>, node_a: &Position, node_b: &Position) -> bool 
     // (val_a as i8 - val_b as i8) <= 1
 }
 
+fn is_edge_down(graph: &Vec<Vec<u8>>, node_a: &Position, node_b: &Position) -> bool {
+    let val_a = match graph[node_a.y][node_a.x] as char {
+        'S' => 'a' as i8,
+        'E' => 'z' as i8,
+        _ => graph[node_a.y][node_a.x] as i8,
+    };
+
+    let val_b = match graph[node_b.y][node_b.x] as char {
+        'S' => 'a' as i8,
+        'E' => 'z' as i8,
+        _ => graph[node_b.y][node_b.x] as i8,
+    };
+
+    (val_a - val_b) <= 1
+    // (val_a as i8 - val_b as i8) <= 1
+}
 
 fn build_node(
     graph: &Vec<Vec<u8>>,
@@ -102,8 +117,13 @@ fn build_node(
     })
 }
 
-fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
-    let start_node = find_node(&graph, 'S').unwrap();
+fn dijkstra(
+    graph: &Vec<Vec<u8>>,
+    start_char: char,
+    end_char: char,
+    is_edge: &dyn Fn(&Vec<Vec<u8>>, &Position, &Position) -> bool,
+) -> i32 {
+    let start_node = find_node(&graph, start_char).unwrap();
 
     let width = graph[0].len();
     let height = graph.len();
@@ -122,7 +142,8 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
     let mut out = vec![vec![' ' as u8; width]; height];
     let mut parent = vec![vec![Position { x: 0, y: 0 }; width]; height];
 
-    let mut last_char = 'S' as u8;
+    // let mut last_char = 'S' as u8;
+    let mut eee = Position{x: 0, y: 0};
 
     let mut min_distance = i32::MAX;
     while let Some(Reverse(pair)) = priority_queue.pop() {
@@ -137,20 +158,23 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
 
         out[node_a.y][node_a.x] = graph[node_a.y][node_a.x];
 
-        if graph[node_a.y][node_a.x] == 'E' as u8 {
+        if graph[node_a.y][node_a.x] == end_char as u8 {
             // println!("BUKA 1");
-            min_distance = pair.distance;
-            break;
-        } else if graph[node_a.y][node_a.x] == last_char {
-            // println!("BUKA 2");
+            eee = node_a.clone();
+            // min_distance = pair.distance;
             min_distance = std::cmp::min(min_distance, pair.distance);
-        } else if (graph[node_a.y][node_a.x] == 'a' as u8 && last_char == 'S' as u8)
-            || graph[node_a.y][node_a.x] == last_char + 1
-        {
-            // println!("BUKA 3");
-            last_char = graph[node_a.y][node_a.x];
-            min_distance = pair.distance;
+            // break;
         }
+        //  else if graph[node_a.y][node_a.x] == last_char {
+        //     // println!("BUKA 2");
+        //     min_distance = std::cmp::min(min_distance, pair.distance);
+        // } else if (graph[node_a.y][node_a.x] == 'a' as u8 && last_char == 'S' as u8)
+        //     || graph[node_a.y][node_a.x] == last_char + 1
+        // {
+        //     // println!("BUKA 3");
+        //     last_char = graph[node_a.y][node_a.x];
+        //     min_distance = pair.distance;
+        // }
 
         for (shift_y, shift_x) in [(-1, 0), (0, 1), (1, 0), (0, -1)] {
             // Skip if out of border
@@ -164,7 +188,7 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
             // }
 
             // Skip if no edge between nodes
-            if !is_edge2(&graph, &node_a, &node_b) {
+            if !is_edge(&graph, &node_a, &node_b) {
                 continue;
             }
 
@@ -179,90 +203,90 @@ fn dijkstra(graph: &Vec<Vec<u8>>) -> i32 {
         }
     }
 
+    let mut out = vec![vec![' ' as u8; width]; height];
+    // let mut n = find_node(graph, end_char).unwrap();
+    let mut n = eee;
+    loop {
+        out[n.y][n.x] = graph[n.y][n.x];
 
-    // let mut out = vec![vec![' ' as u8; width]; height];
-    // let mut n = find_node(graph, 'E').unwrap();
-    // loop {
-    //     out[n.y][n.x] = graph[n.y][n.x];
+        if graph[n.y][n.x] == start_char as u8 {
+            break;
+        }
 
-    //     if graph[n.y][n.x] == 'S' as u8 {
-    //         break;
-    //     }
+        n = parent[n.y][n.x].clone();
+    }
 
-    //     n = parent[n.y][n.x].clone();
-    // }
-
-    // for line in out {
-    //     println!(
-    //         "{}",
-    //         // line.iter().map(|val| val.to_string()).collect::<String>()
-    //         String::from_utf8(line).unwrap()
-    //     );
-    // }
+    for line in out {
+        println!(
+            "{}",
+            // line.iter().map(|val| val.to_string()).collect::<String>()
+            String::from_utf8(line).unwrap()
+        );
+    }
 
     return min_distance;
 }
 
-fn bfs(graph: &Vec<Vec<u8>>) -> i32 {
-    let start_node = find_node(graph, 'S').unwrap();
-    let mut queue = VecDeque::new();
+// fn bfs(graph: &Vec<Vec<u8>>) -> i32 {
+//     let start_node = find_node(graph, 'S').unwrap();
+//     let mut queue = VecDeque::new();
 
-    let width = graph[0].len();
-    let height = graph.len();
+//     let width = graph[0].len();
+//     let height = graph.len();
 
-    let mut visited = vec![vec![false; width]; height];
-    let mut distance = vec![vec![i32::MAX; width]; height];
+//     let mut visited = vec![vec![false; width]; height];
+//     let mut distance = vec![vec![i32::MAX; width]; height];
 
-    queue.push_back(Pair {
-        node: start_node.clone(),
-        distance: 0,
-    });
+//     queue.push_back(Pair {
+//         node: start_node.clone(),
+//         distance: 0,
+//     });
 
-    while let Some(pair) = queue.pop_front() {
-        let node_a = pair.node;
+//     while let Some(pair) = queue.pop_front() {
+//         let node_a = pair.node;
 
-        if visited[node_a.y][node_a.x] {
-            continue;
-        }
-        visited[node_a.y][node_a.x] = true;
+//         if visited[node_a.y][node_a.x] {
+//             continue;
+//         }
+//         visited[node_a.y][node_a.x] = true;
 
-        if pair.distance >= distance[node_a.y][node_a.x] {
-            continue;
-        }
-        distance[node_a.y][node_a.x] = pair.distance;
+//         if pair.distance >= distance[node_a.y][node_a.x] {
+//             continue;
+//         }
+//         distance[node_a.y][node_a.x] = pair.distance;
 
-        for (shift_y, shift_x) in [(-1, 0), (0, 1), (1, 0), (0, -1)] {
-            let node_b = match build_node(&graph, &node_a, shift_y, shift_x) {
-                Some(n) => n,
-                None => continue,
-            };
+//         for (shift_y, shift_x) in [(-1, 0), (0, 1), (1, 0), (0, -1)] {
+//             let node_b = match build_node(&graph, &node_a, shift_y, shift_x) {
+//                 Some(n) => n,
+//                 None => continue,
+//             };
 
-            if !is_edge2(&graph, &node_a, &node_b) {
-                continue;
-            }
+//             if !is_edge2(&graph, &node_a, &node_b) {
+//                 continue;
+//             }
 
-            queue.push_back(Pair {
-                node: node_b,
-                distance: pair.distance + 1,
-            });
-        }
-    }
+//             queue.push_back(Pair {
+//                 node: node_b,
+//                 distance: pair.distance + 1,
+//             });
+//         }
+//     }
 
-    let end_node = find_node(graph, 'E').unwrap();
-    distance[end_node.y][end_node.x]
-}
+//     let end_node = find_node(graph, 'E').unwrap();
+//     distance[end_node.y][end_node.x]
+// }
 
 // #algorithm: Dijkstra’s algorithm
 fn main() {
-    // Build graph
     let mut graph = vec![];
     while let Some(line) = read_string() {
         graph.push(line);
     }
 
-    let min_distance1 = dijkstra(&graph);
+    let min_distance1 = dijkstra(&graph, 'S', 'E', &is_edge_up);
+    let min_distance2 = dijkstra(&graph, 'E', 'a', &is_edge_down);
     // let min_distance2 = bfs(&graph);
 
     println!("{}", min_distance1);
-    // println!("{}", min_distance2);
+    println!("{}", min_distance2);
 }
