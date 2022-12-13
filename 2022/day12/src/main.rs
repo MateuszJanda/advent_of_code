@@ -17,7 +17,7 @@ fn read_chars() -> Option<Vec<u8>> {
             }
 
             let v: Vec<u8> = stripped_line.chars().map(|ch| ch as u8).collect();
-            return Some(v);
+            Some(v)
         }
     }
 }
