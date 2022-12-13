@@ -30,7 +30,7 @@ fn read_packets() -> Option<(String, String)> {
     Some((left, right))
 }
 
-fn split_packet(packet: &str) -> Vec<String> {
+fn split_packet(packet: &String) -> Vec<String> {
     let mut bracket_counter = 0;
     let mut start_value = None;
     let mut result = vec![];
@@ -71,11 +71,7 @@ fn split_packet(packet: &str) -> Vec<String> {
     result
 }
 
-fn check_order(left: &str, right: &str) -> Ordering {
-    // println!("{:?}", split_packet(left));
-    // println!("{:?}", split_packet(right));
-    // println!("-----");
-
+fn check_order(left: &String, right: &String) -> Ordering {
     let left_vec = split_packet(left);
     let right_vec = split_packet(right);
 
@@ -84,16 +80,9 @@ fn check_order(left: &str, right: &str) -> Ordering {
     for (l_str, r_str) in it {
         let result = match (l_str.parse::<i32>(), r_str.parse::<i32>()) {
             (Ok(l_val), Ok(r_val)) => l_val.cmp(&r_val),
-            (Ok(_), Err(_)) => {
-                check_order(l_str.as_str(), ("[".to_string() + r_str + "]").as_str())
-            }
-            (Err(_), Ok(_)) => {
-                check_order(("[".to_string() + l_str + "]").as_str(), r_str.as_str())
-            }
-            (Err(_), Err(_)) => check_order(
-                ("[".to_string() + l_str + "]").as_str(),
-                ("[".to_string() + r_str + "]").as_str(),
-            ),
+            (Ok(l_val), Err(_)) => check_order(&("[".to_owned() + &l_val.to_string() + "]"), r_str),
+            (Err(_), Ok(r_val)) => check_order(l_str, &("[".to_owned() + &r_val.to_string() + "]")),
+            (Err(_), Err(_)) => check_order(l_str, r_str),
         };
 
         match result {
@@ -102,13 +91,19 @@ fn check_order(left: &str, right: &str) -> Ordering {
         };
     }
 
-    Ordering::Equal
+    left_vec.len().cmp(&right_vec.len())
 }
 
 fn main() {
     let mut counter = 1;
+    let mut result = 0;
     while let Some((left, right)) = read_packets() {
-        check_order(left.as_str(), right.as_str());
+        match check_order(&left, &right) {
+            Ordering::Less => result += counter,
+            _ => (),
+        }
         counter += 1;
     }
+
+    println!("{}", result);
 }
