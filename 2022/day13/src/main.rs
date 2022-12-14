@@ -78,8 +78,8 @@ fn check_order(left: &String, right: &String) -> Ordering {
     for (l_str, r_str) in it {
         let result = match (l_str.parse::<i32>(), r_str.parse::<i32>()) {
             (Ok(l_val), Ok(r_val)) => l_val.cmp(&r_val),
-            (Ok(l_val), Err(_)) => check_order(&("[".to_owned() + &l_val.to_string() + "]"), r_str),
-            (Err(_), Ok(r_val)) => check_order(l_str, &("[".to_owned() + &r_val.to_string() + "]")),
+            (Ok(l_val), Err(_)) => check_order(&format!("[{}]", l_val), r_str),
+            (Err(_), Ok(r_val)) => check_order(l_str, &format!("[{}]", r_val)),
             (Err(_), Err(_)) => check_order(l_str, r_str),
         };
 
