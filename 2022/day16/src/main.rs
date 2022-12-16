@@ -1,6 +1,7 @@
 // Author:  mateusz.janda@gmail.com
 // Ad maiorem Dei gloriam
 
+use std::collections::HashMap;
 use std::io;
 use std::iter::FromIterator;
 
@@ -36,7 +37,29 @@ fn read_valve() -> Option<(String, i32, Vec<String>)> {
 }
 
 fn main() {
-    while let Some((valve, rate, neighbors)) = read_valve() {
-        println!("{} {} {:?}", valve, rate, neighbors);
+    let mut neighborhood = HashMap::new();
+
+    while let Some((valve, rate, adjacent)) = read_valve() {
+        println!("{} {} {:?}", valve, rate, adjacent);
+
+        neighborhood.insert(valve, adjacent);
     }
+
+    for (v1, adj1) in neighborhood.iter() {
+        for a1 in adj1.iter() {
+            let mut bi_dir = false;
+            for v2 in neighborhood[a1].iter() {
+                if v1 == v2 {
+                    bi_dir = true;
+                    break;
+                }
+            }
+
+            if !bi_dir {
+                println!("No bidirectional {} {}", v1, a1);
+            }
+        }
+    }
+
+    println!("Ok")
 }
