@@ -18,6 +18,7 @@ fn read_valve() -> Option<(String, i32, Vec<String>)> {
                 .replace("valves", "valve")
                 .replace("tunnels", "tunnel")
                 .replace("leads", "lead")
+                .replace(",", "")
                 .replace("Valve ", "")
                 .replace("has flow rate=", "")
                 .replace("; tunnel lead to valve", "")
