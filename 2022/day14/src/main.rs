@@ -29,18 +29,20 @@ fn read_path() -> Option<Vec<(i32, i32)>> {
 }
 
 #[derive(PartialOrd, Eq, PartialEq, Hash, Clone, Debug)]
-struct Range {
+struct Obstacle {
     begin: i32,
     end: i32,
 }
 
-enum Dir {
-    Forward,
-    Backward,
+#[derive(Eq, Hash, PartialEq, Clone, Debug)]
+struct Sand {
+    x: i32,
+    y: i32,
 }
-impl Range {
+
+impl Obstacle {
     fn new(val1: i32, val2: i32) -> Self {
-        Range {
+        Obstacle {
             begin: std::cmp::min(val1, val2),
             end: std::cmp::max(val1, val2),
         }
@@ -51,37 +53,87 @@ impl Range {
     }
 }
 
-fn find_range_for_drop(
-    obstacles: &BTreeMap<i32, Vec<Range>>,
-    level: i32,
-    dir: Dir,
-    pos: i32,
-) -> Option<&Range> {
-    match dir {
-        Dir::Backward => obstacles
-            .range(..=level)
-            .rev()
-            .into_iter()
-            .map(|(l, ranges)| (l, ranges))
-            .flatten()
-            .into_iter()
-            .find(|range| range.is_contact(pos)),
-        Dir::Forward => obstacles
-            .range(level..)
-            .into_iter()
-            .map(|(_level, ranges)| ranges)
-            .flatten()
-            .into_iter()
-            .find(|range| range.is_contact(pos)),
+fn find_rocks(horiz_rocks: &BTreeMap<i32, Vec<Obstacle>>, x: i32, y: i32) -> Option<i32> {
+    for (lvl, rocks) in horiz_rocks.range(y..) {
+        if rocks.into_iter().find(|rock| rock.is_contact(x)).is_some() {
+            return Some(*lvl);
+        }
+    }
+    None
+}
+
+fn find_sand(sands: &HashSet<Sand>, x: i32, mut y: i32) -> Option<i32> {
+    loop {
+        y -= 1;
+        if !sands.contains(&Sand { x, y }) {
+            return Some(y);
+        }
     }
 }
 
+fn is_obstacle(
+    verti_rocks: &BTreeMap<i32, Vec<Obstacle>>,
+    horiz_rocks: &BTreeMap<i32, Vec<Obstacle>>,
+    sands: &HashSet<Sand>,
+    x: i32,
+    y: i32,
+) -> bool {
+    if let Some(rocks) = horiz_rocks.get(&y) {
+        if rocks.into_iter().find(|rock| rock.is_contact(x)).is_some() {
+            return true;
+        }
+    }
+
+    if let Some(rocks) = verti_rocks.get(&x) {
+        if rocks.into_iter().find(|rock| rock.is_contact(y)).is_some() {
+            return true;
+        }
+    }
+
+    sands.contains(&Sand { x, y })
+}
+
+enum Cmd {
+    DropAgain(i32, i32),
+    RestAt(i32, i32),
+    Abyss,
+}
+
+fn drop_sand(
+    verti_rocks: &BTreeMap<i32, Vec<Obstacle>>,
+    horiz_rocks: &BTreeMap<i32, Vec<Obstacle>>,
+    sands: &HashSet<Sand>,
+    x: i32,
+    y: i32,
+) -> Cmd {
+    match find_rocks(horiz_rocks, x, y) {
+        Some(rock_level) => {
+            let y = rock_level - 1;
+
+            match find_sand(sands, x, y) {
+                Some(sand_level) => {
+                    let y = sand_level - 1;
+                    // Move down-left
+                    if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x - 1, y + 1) {
+                        Cmd::DropAgain(x - 1, y + 1)
+                    // Move down-right
+                    } else if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x + 1, y + 1) {
+                        Cmd::DropAgain(x + 1, y + 1)
+                    } else {
+                        Cmd::RestAt(x, y)
+                    }
+                }
+                None => Cmd::RestAt(x, y),
+            }
+        }
+        None => Cmd::Abyss,
+    }
+}
 fn main() {
-    // X -> Vecotr of Ranges
-    let mut verti_obstacles: BTreeMap<i32, Vec<Range>> = BTreeMap::new();
-    // Y -> Vecotr of Ranges
-    let mut horiz_obstacles: BTreeMap<i32, Vec<Range>> = BTreeMap::new();
-    let mut sand_obstacle: HashSet<Range> = HashSet::new();
+    // Position (like X) -> Vecotr of Ranges
+    let mut verti_rocks: BTreeMap<i32, Vec<Obstacle>> = BTreeMap::new();
+    let mut horiz_rocks: BTreeMap<i32, Vec<Obstacle>> = BTreeMap::new();
+    let mut sands: HashSet<Sand> = HashSet::new();
 
     while let Some(path) = read_path() {
         let mut x = None;
@@ -94,13 +146,13 @@ fn main() {
                 }
                 (Some(x_pos), Some(y_pos)) => {
                     if x_pos == pos.0 {
-                        let range = Range::new(y_pos, pos.1);
-                        let values = verti_obstacles.entry(x_pos).or_default();
-                        values.push(range);
+                        let obstacle = Obstacle::new(y_pos, pos.1);
+                        let obstacles = verti_rocks.entry(x_pos).or_default();
+                        obstacles.push(obstacle);
                     } else if y_pos == pos.1 {
-                        let range = Range::new(x_pos, pos.0);
-                        let values = horiz_obstacles.entry(y_pos).or_default();
-                        values.push(range);
+                        let obstacle = Obstacle::new(x_pos, pos.0);
+                        let obstacles = horiz_rocks.entry(y_pos).or_default();
+                        obstacles.push(obstacle);
                     } else {
                         panic!("X != pos.0 or Y != pos.1");
                     }
@@ -114,12 +166,23 @@ fn main() {
         }
     }
 
-    // println!("{}", horiz_obstacles.len());
-    // println!("{:?}", horiz_obstacles);
+    let mut x = 500;
+    let mut y = 0;
 
-    if let Some(f) = find_range_for_drop(&horiz_obstacles, 0, Dir::Forward, 500) {
-        println!("{:?}", f);
-    } else {
-        println!("false");
+    while let cmd = drop_sand(&verti_rocks, &horiz_rocks, &sands, x, y) {
+        match cmd {
+            Cmd::Abyss => break,
+            Cmd::DropAgain(x_pos, y_pos) => {
+                x = x_pos;
+                y = y_pos;
+            }
+            Cmd::RestAt(x_pos, y_pos) => {
+                sands.insert(Sand { x: x_pos, y: y_pos });
+                x = 500;
+                y = 0;
+            }
+        }
     }
+
+    println!("{}", sands.len());
 }
