@@ -51,7 +51,7 @@ fn is_floor(
     start_block_line: usize,
     start_buff_line: usize,
 ) -> bool {
-    if buffer.len() == 0 {
+    if buffer.is_empty() {
         return true;
     }
 
@@ -68,14 +68,14 @@ fn is_floor(
     false
 }
 
-fn is_wall(
-    buffer: &Vec<Vec<char>>,
-    block: &Vec<Vec<char>>,
-    start_block_line: usize,
-    start_buff_line: usize,
-) -> bool {
-    false
-}
+// fn is_wall(
+//     buffer: &Vec<Vec<char>>,
+//     block: &Vec<Vec<char>>,
+//     start_block_line: usize,
+//     start_buff_line: usize,
+// ) -> bool {
+//     false
+// }
 
 fn merge(
     buffer: &mut Vec<Vec<char>>,
@@ -83,6 +83,16 @@ fn merge(
     start_block_line: usize,
     start_buff_line: usize,
 ) {
+    println!("start {} {} ", start_block_line, start_buff_line);
+
+    if buffer.is_empty() {
+        for line in block.iter().rev() {
+            buffer.push(line.clone());
+        }
+
+        return;
+    }
+
     for y in (0..start_block_line).rev() {
         buffer.push(block[y].clone());
     }
@@ -93,6 +103,13 @@ fn merge(
                 buffer[start_buff_line + y_shift][x] = '#';
             }
         }
+    }
+}
+
+#[allow(dead_code, unused)]
+fn print_buffer(buffer: &Vec<Vec<char>>) {
+    for line in buffer.iter().rev() {
+        println!("|{}|", line.iter().collect::<String>().replace(" ", "."));
     }
 }
 
@@ -160,6 +177,7 @@ fn main() {
             _ => panic!("Unsupported dir"),
         }
 
+        println!("lift {}", lift);
         if lift < LIFT {
             lift += 1;
             continue;
@@ -168,8 +186,11 @@ fn main() {
         if is_floor(&buffer, &block, start_block_line, start_buff_line) {
             merge(&mut buffer, &block, start_block_line, start_buff_line);
 
+            print_buffer(&buffer);
+
             block_counter += 1;
             block_num = (block_num + 1) % blocks.len();
+            block = blocks[block_num].clone();
             lift = 0;
         } else {
             lift += 1;
