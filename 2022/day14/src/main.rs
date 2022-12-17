@@ -1,8 +1,7 @@
 // Author:  mateusz.janda@gmail.com
 // Ad maiorem Dei gloriam
 
-use std::cmp::Ordering;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::{collections::HashSet, io};
 
 fn read_path() -> Option<Vec<(i32, i32)>> {
@@ -29,7 +28,7 @@ fn read_path() -> Option<Vec<(i32, i32)>> {
     }
 }
 
-#[derive(PartialOrd, Eq, PartialEq, Clone, Debug)]
+#[derive(PartialOrd, Eq, PartialEq, Hash, Clone, Debug)]
 struct Range {
     begin: i32,
     end: i32,
@@ -44,15 +43,12 @@ impl Range {
     }
 }
 
-impl Ord for Range {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.begin.cmp(&other.begin)
-    }
-}
-
 fn main() {
-    let mut verti_obstacle: BTreeMap<Range, HashSet<i32>> = BTreeMap::new();
-    let mut horiz_obstacle: BTreeMap<Range, HashSet<i32>> = BTreeMap::new();
+    // X -> Vecotr of Ranges
+    let mut verti_obstacle: HashMap<i32, Vec<Range>> = HashMap::new();
+    // Y -> Vecotr of Ranges
+    let mut horiz_obstacle: HashMap<i32, Vec<Range>> = HashMap::new();
+    let mut drop_obstacle: HashSet<Range> = HashSet::new();
 
     while let Some(path) = read_path() {
         let mut x = None;
@@ -66,12 +62,12 @@ fn main() {
                 (Some(x_pos), Some(y_pos)) => {
                     if x_pos == pos.0 {
                         let range = Range::new(y_pos, pos.1);
-                        let values = verti_obstacle.entry(range).or_default();
-                        values.insert(x_pos);
+                        let values = verti_obstacle.entry(x_pos).or_default();
+                        values.push(range);
                     } else if y_pos == pos.1 {
                         let range = Range::new(x_pos, pos.0);
-                        let values = horiz_obstacle.entry(range).or_default();
-                        values.insert(y_pos);
+                        let values = horiz_obstacle.entry(y_pos).or_default();
+                        values.push(range);
                     } else {
                         panic!("X != pos.0 or Y != pos.1");
                     }
