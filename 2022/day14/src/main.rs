@@ -1,7 +1,7 @@
 // Author:  mateusz.janda@gmail.com
 // Ad maiorem Dei gloriam
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::{collections::HashSet, io};
 
 fn read_path() -> Option<Vec<(i32, i32)>> {
@@ -34,6 +34,10 @@ struct Range {
     end: i32,
 }
 
+enum Dir {
+    Forward,
+    Backward,
+}
 impl Range {
     fn new(val1: i32, val2: i32) -> Self {
         Range {
@@ -41,14 +45,43 @@ impl Range {
             end: std::cmp::max(val1, val2),
         }
     }
+
+    fn is_contact(&self, pos: i32) -> bool {
+        pos >= self.begin && pos <= self.end
+    }
+}
+
+fn find_range_for_drop(
+    obstacles: &BTreeMap<i32, Vec<Range>>,
+    level: i32,
+    dir: Dir,
+    pos: i32,
+) -> Option<&Range> {
+    match dir {
+        Dir::Backward => obstacles
+            .range(..=level)
+            .rev()
+            .into_iter()
+            .map(|(l, ranges)| (l, ranges))
+            .flatten()
+            .into_iter()
+            .find(|range| range.is_contact(pos)),
+        Dir::Forward => obstacles
+            .range(level..)
+            .into_iter()
+            .map(|(_level, ranges)| ranges)
+            .flatten()
+            .into_iter()
+            .find(|range| range.is_contact(pos)),
+    }
 }
 
 fn main() {
     // X -> Vecotr of Ranges
-    let mut verti_obstacle: HashMap<i32, Vec<Range>> = HashMap::new();
+    let mut verti_obstacles: BTreeMap<i32, Vec<Range>> = BTreeMap::new();
     // Y -> Vecotr of Ranges
-    let mut horiz_obstacle: HashMap<i32, Vec<Range>> = HashMap::new();
-    let mut drop_obstacle: HashSet<Range> = HashSet::new();
+    let mut horiz_obstacles: BTreeMap<i32, Vec<Range>> = BTreeMap::new();
+    let mut sand_obstacle: HashSet<Range> = HashSet::new();
 
     while let Some(path) = read_path() {
         let mut x = None;
@@ -62,11 +95,11 @@ fn main() {
                 (Some(x_pos), Some(y_pos)) => {
                     if x_pos == pos.0 {
                         let range = Range::new(y_pos, pos.1);
-                        let values = verti_obstacle.entry(x_pos).or_default();
+                        let values = verti_obstacles.entry(x_pos).or_default();
                         values.push(range);
                     } else if y_pos == pos.1 {
                         let range = Range::new(x_pos, pos.0);
-                        let values = horiz_obstacle.entry(y_pos).or_default();
+                        let values = horiz_obstacles.entry(y_pos).or_default();
                         values.push(range);
                     } else {
                         panic!("X != pos.0 or Y != pos.1");
@@ -75,9 +108,18 @@ fn main() {
                     x = Some(pos.0);
                     y = Some(pos.1);
                 }
-                (_, _) => panic!("Both X and Y should be initiated or None"),
+                (_, _) => panic!("Both X and Y should be initiated or set to None"),
             }
             println!("{}:{} ", pos.0, pos.1);
         }
+    }
+
+    // println!("{}", horiz_obstacles.len());
+    // println!("{:?}", horiz_obstacles);
+
+    if let Some(f) = find_range_for_drop(&horiz_obstacles, 0, Dir::Forward, 500) {
+        println!("{:?}", f);
+    } else {
+        println!("false");
     }
 }
