@@ -112,12 +112,11 @@ fn drop_sand(
 ) -> Cmd {
     match find_rocks(horiz_rocks, x, y) {
         Some(rock_level) => {
-            println!("rock_level {}", rock_level);
+            // println!("rock_level {}", rock_level);
             let y = rock_level - 1;
 
             match find_sand(sands, x, y) {
                 Some(sand_level) => {
-                    println!("Tutaj");
                     let y = sand_level - 1;
                     // Move down-left
                     if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x - 1, y + 1) {
