@@ -57,9 +57,10 @@ fn bfs(
             break;
         }
 
+        // println!("rates {}", valve);
         let rate = rates[&valve] * (TIME_LIMIT - t);
+        // println!(" Rate {} {} {}", valve, rate, t);
         if !open.contains(&valve) && rate > best_rate {
-            println!(" Rate {} {} {}", valve, rate, t);
             best_rate = rate;
             time_passed = t;
             best_valve = valve.clone();
@@ -84,6 +85,8 @@ fn main() {
     let mut rates = HashMap::new();
     let mut open = HashSet::new();
     while let Some((valve, rate, adjacent)) = read_valve() {
+        println!("Input {} {} {:?}", valve, rate, adjacent);
+
         graph.insert(valve.clone(), adjacent);
         rates.insert(valve.clone(), rate);
 
@@ -93,6 +96,7 @@ fn main() {
     }
 
     let num_of_valves = graph.len();
+    println!("num_of_valves {}", open.len());
     let mut start_valve = "AA".to_string();
     let mut time_passed = 1;
 
