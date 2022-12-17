@@ -63,12 +63,16 @@ fn find_rocks(horiz_rocks: &BTreeMap<i32, Vec<Obstacle>>, x: i32, y: i32) -> Opt
 }
 
 fn find_sand(sands: &HashSet<Sand>, x: i32, mut y: i32) -> Option<i32> {
+    let mut result = None;
     loop {
-        y -= 1;
-        if !sands.contains(&Sand { x, y }) {
-            return Some(y);
+        match sands.contains(&Sand { x, y }) {
+            true => result = Some(y),
+            false => break,
         }
+        y -= 1;
     }
+
+    result
 }
 
 fn is_obstacle(
@@ -108,10 +112,12 @@ fn drop_sand(
 ) -> Cmd {
     match find_rocks(horiz_rocks, x, y) {
         Some(rock_level) => {
+            println!("rock_level {}", rock_level);
             let y = rock_level - 1;
 
             match find_sand(sands, x, y) {
                 Some(sand_level) => {
+                    println!("Tutaj");
                     let y = sand_level - 1;
                     // Move down-left
                     if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x - 1, y + 1) {
@@ -169,14 +175,17 @@ fn main() {
     let mut x = 500;
     let mut y = 0;
 
+    println!("Start {} {}", x, y);
     while let cmd = drop_sand(&verti_rocks, &horiz_rocks, &sands, x, y) {
         match cmd {
             Cmd::Abyss => break,
             Cmd::DropAgain(x_pos, y_pos) => {
+                println!("DropAgain {} {}", x_pos, y_pos);
                 x = x_pos;
                 y = y_pos;
             }
             Cmd::RestAt(x_pos, y_pos) => {
+                println!("Rest {} {}", x_pos, y_pos);
                 sands.insert(Sand { x: x_pos, y: y_pos });
                 x = 500;
                 y = 0;
