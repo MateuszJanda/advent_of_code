@@ -3,7 +3,6 @@
 
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
-use std::hash::{Hash, Hasher};
 use std::{collections::HashSet, io};
 
 fn read_path() -> Option<Vec<(i32, i32)>> {
@@ -51,13 +50,6 @@ impl Ord for Range {
     }
 }
 
-
-impl Hash for Range {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.begin.hash(state);
-    }
-}
-
 fn main() {
     let mut verti_obstacle: BTreeMap<Range, HashSet<i32>> = BTreeMap::new();
     let mut horiz_obstacle: BTreeMap<Range, HashSet<i32>> = BTreeMap::new();
@@ -74,44 +66,20 @@ fn main() {
                 (Some(x_pos), Some(y_pos)) => {
                     if x_pos == pos.0 {
                         let range = Range::new(y_pos, pos.1);
-
-                        // let a = verti_obstacle.entry(range).or_insert()
                         let values = verti_obstacle.entry(range).or_default();
                         values.insert(x_pos);
-
-                        // match verti_obstacle.get_mut(&range) {
-                        //     None => {
-                        //         verti_obstacle.insert(range, HashSet::new());
-                        //     }
-                        //     Some(value) => {
-                        //         value.insert(x_pos);
-                        //     }
-                        // };
                     } else if y_pos == pos.1 {
                         let range = Range::new(x_pos, pos.0);
-
                         let values = horiz_obstacle.entry(range).or_default();
                         values.insert(y_pos);
-
-
-
-                        // match horiz_obstacle.get_mut(&range) {
-                        //     None => {
-                        //         horiz_obstacle.insert(range, HashSet::new());
-                        //     }
-                        //     Some(value) => {
-                        //         value.insert(y_pos);
-                        //     }
-                        // };
                     } else {
-                        panic!("X or Y should be equal");
+                        panic!("X != pos.0 or Y != pos.1");
                     }
 
                     x = Some(pos.0);
                     y = Some(pos.1);
                 }
-
-                (_, _) => panic!("Something is wrong"),
+                (_, _) => panic!("Both X and Y should be initiated or None"),
             }
             println!("{}:{} ", pos.0, pos.1);
         }
