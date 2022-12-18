@@ -4,6 +4,9 @@
 use std::collections::BTreeMap;
 use std::{collections::HashSet, io};
 
+const START_X: i32 = 500;
+const START_Y: i32 = 0;
+
 fn read_path() -> Option<Vec<(i32, i32)>> {
     let mut line = String::new();
     io::stdin().read_line(&mut line).unwrap();
@@ -97,19 +100,23 @@ fn is_obstacle(
     sands.contains(&Sand { x, y })
 }
 
-enum Cmd {
+fn is_inf_floor(highest_y: i32, y: i32) -> bool {
+    y >= highest_y
+}
+
+enum CmdPart1 {
     DropAgain(i32, i32),
     RestAt(i32, i32),
     Abyss,
 }
 
-fn drop_sand(
+fn drop_sand_to_abyss(
     verti_rocks: &BTreeMap<i32, Vec<Rock>>,
     horiz_rocks: &BTreeMap<i32, Vec<Rock>>,
     sands: &HashSet<Sand>,
     x: i32,
     y: i32,
-) -> Cmd {
+) -> CmdPart1 {
     match find_rocks(horiz_rocks, x, y) {
         Some(rock_level) => {
             let y = rock_level - 1;
@@ -119,29 +126,178 @@ fn drop_sand(
                     let y = sand_level - 1;
                     // Move down-left
                     if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x - 1, y + 1) {
-                        Cmd::DropAgain(x - 1, y + 1)
+                        CmdPart1::DropAgain(x - 1, y + 1)
                     // Move down-right
                     } else if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x + 1, y + 1) {
-                        Cmd::DropAgain(x + 1, y + 1)
+                        CmdPart1::DropAgain(x + 1, y + 1)
                     } else {
-                        Cmd::RestAt(x, y)
+                        CmdPart1::RestAt(x, y)
                     }
                 }
                 None => {
                     // Move down-left
                     if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x - 1, y + 1) {
-                        Cmd::DropAgain(x - 1, y + 1)
+                        CmdPart1::DropAgain(x - 1, y + 1)
                     // Move down-right
                     } else if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x + 1, y + 1) {
-                        Cmd::DropAgain(x + 1, y + 1)
+                        CmdPart1::DropAgain(x + 1, y + 1)
                     } else {
-                        Cmd::RestAt(x, y)
+                        CmdPart1::RestAt(x, y)
                     }
                 }
             }
         }
-        None => Cmd::Abyss,
+        None => CmdPart1::Abyss,
     }
+}
+
+fn simulation_part1(
+    verti_rocks: &BTreeMap<i32, Vec<Rock>>,
+    horiz_rocks: &BTreeMap<i32, Vec<Rock>>,
+) -> usize {
+    let mut sands: HashSet<Sand> = HashSet::new();
+
+    let mut x = START_X;
+    let mut y = START_Y;
+
+    loop {
+        match drop_sand_to_abyss(&verti_rocks, &horiz_rocks, &sands, x, y) {
+            CmdPart1::Abyss => break,
+            CmdPart1::DropAgain(x_pos, y_pos) => {
+                x = x_pos;
+                y = y_pos;
+            }
+            CmdPart1::RestAt(x_pos, y_pos) => {
+                sands.insert(Sand { x: x_pos, y: y_pos });
+                x = START_X;
+                y = START_Y;
+            }
+        }
+    }
+
+    return sands.len();
+}
+
+enum CmdPart2 {
+    DropAgain(i32, i32),
+    RestAt(i32, i32),
+}
+
+fn drop_sand_to_inf_floor(
+    verti_rocks: &BTreeMap<i32, Vec<Rock>>,
+    horiz_rocks: &BTreeMap<i32, Vec<Rock>>,
+    sands: &HashSet<Sand>,
+    highest_y: i32,
+    x: i32,
+    y: i32,
+) -> CmdPart2 {
+    match find_rocks(horiz_rocks, x, y) {
+        Some(rock_level) => {
+            let y = rock_level - 1;
+
+            match find_sand(sands, x, y) {
+                Some(sand_level) => {
+                    let y = sand_level - 1;
+                    // Move down-left
+                    if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x - 1, y + 1)
+                        && !is_inf_floor(highest_y, y + 1)
+                    {
+                        CmdPart2::DropAgain(x - 1, y + 1)
+                    // Move down-right
+                    } else if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x + 1, y + 1)
+                        && !is_inf_floor(highest_y, y + 1)
+                    {
+                        CmdPart2::DropAgain(x + 1, y + 1)
+                    } else {
+                        CmdPart2::RestAt(x, y)
+                    }
+                }
+                None => {
+                    // Move down-left
+                    if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x - 1, y + 1)
+                        && !is_inf_floor(highest_y, y + 1)
+                    {
+                        CmdPart2::DropAgain(x - 1, y + 1)
+                    // Move down-right
+                    } else if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x + 1, y + 1)
+                        && !is_inf_floor(highest_y, y + 1)
+                    {
+                        CmdPart2::DropAgain(x + 1, y + 1)
+                    } else {
+                        CmdPart2::RestAt(x, y)
+                    }
+                }
+            }
+        }
+        None => {
+            let y = highest_y as i32 - 1;
+
+            match find_sand(sands, x, y) {
+                Some(sand_level) => {
+                    let y = sand_level - 1;
+                    // Move down-left
+                    if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x - 1, y + 1)
+                        && !is_inf_floor(highest_y, y + 1)
+                    {
+                        CmdPart2::DropAgain(x - 1, y + 1)
+                    // Move down-right
+                    } else if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x + 1, y + 1)
+                        && !is_inf_floor(highest_y, y + 1)
+                    {
+                        CmdPart2::DropAgain(x + 1, y + 1)
+                    } else {
+                        CmdPart2::RestAt(x, y)
+                    }
+                }
+                None => {
+                    // Move down-left
+                    if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x - 1, y + 1)
+                        && !is_inf_floor(highest_y, y + 1)
+                    {
+                        CmdPart2::DropAgain(x - 1, y + 1)
+                    // Move down-right
+                    } else if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x + 1, y + 1)
+                        && !is_inf_floor(highest_y, y + 1)
+                    {
+                        CmdPart2::DropAgain(x + 1, y + 1)
+                    } else {
+                        CmdPart2::RestAt(x, y)
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn simulation_part2(
+    verti_rocks: &BTreeMap<i32, Vec<Rock>>,
+    horiz_rocks: &BTreeMap<i32, Vec<Rock>>,
+    highest_y: i32,
+) -> usize {
+    let mut sands: HashSet<Sand> = HashSet::new();
+
+    let mut x = START_X;
+    let mut y = START_Y;
+
+    loop {
+        match drop_sand_to_inf_floor(&verti_rocks, &horiz_rocks, &sands, highest_y, x, y) {
+            CmdPart2::DropAgain(x_pos, y_pos) => {
+                x = x_pos;
+                y = y_pos;
+            }
+            CmdPart2::RestAt(x_pos, y_pos) => {
+                sands.insert(Sand { x: x_pos, y: y_pos });
+                x = START_X;
+                y = START_Y;
+
+                if x_pos == START_X && y_pos == START_Y {
+                    break;
+                }
+            }
+        }
+    }
+
+    return sands.len();
 }
 
 #[allow(dead_code, unused)]
@@ -150,7 +306,7 @@ fn print_sands(sands: &HashSet<Sand>) {
     for y in 0..10 {
         let mut line = vec![];
         for x in 493..504 {
-            match sands.contains(&Sand { x: x, y: y }) {
+            match sands.contains(&Sand { x, y }) {
                 true => line.push('o'),
                 false => line.push(' '),
             }
@@ -160,19 +316,18 @@ fn print_sands(sands: &HashSet<Sand>) {
     }
 }
 
-const START_X: i32 = 500;
-const START_Y: i32 = 0;
-
 fn main() {
     // Position (like X) -> Vecotr of Ranges
     let mut verti_rocks: BTreeMap<i32, Vec<Rock>> = BTreeMap::new();
     let mut horiz_rocks: BTreeMap<i32, Vec<Rock>> = BTreeMap::new();
-    let mut sands: HashSet<Sand> = HashSet::new();
+    let mut highest_y = 0;
 
     while let Some(path) = read_path() {
         let mut x = None;
         let mut y = None;
         for pos in path {
+            highest_y = std::cmp::max(highest_y, pos.1);
+
             match (x, y) {
                 (None, None) => {
                     x = Some(pos.0);
@@ -204,22 +359,9 @@ fn main() {
         }
     }
 
-    let mut x = START_X;
-    let mut y = START_Y;
+    let result1 = simulation_part1(&verti_rocks, &horiz_rocks);
+    println!("{}", result1);
 
-    loop {
-        match drop_sand(&verti_rocks, &horiz_rocks, &sands, x, y) {
-            Cmd::Abyss => break,
-            Cmd::DropAgain(x_pos, y_pos) => {
-                x = x_pos;
-                y = y_pos;
-            }
-            Cmd::RestAt(x_pos, y_pos) => {
-                sands.insert(Sand { x: x_pos, y: y_pos });
-                x = START_X;
-                y = START_Y;
-            }
-        }
-    }
-    println!("{}", sands.len());
+    let result2 = simulation_part2(&verti_rocks, &horiz_rocks, highest_y + 2);
+    println!("{}", result2);
 }
