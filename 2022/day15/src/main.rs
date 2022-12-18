@@ -82,12 +82,6 @@ struct Segment {
 fn build_segments(data: &Vec<(Position, Position)>, y_level: i32) -> BTreeSet<Segment> {
     let mut segments = BTreeSet::new();
     for (sensor, beacon) in data {
-        // let distance = manhattan_distance(sensor, beacon);
-
-        // if (sensor.y - y_level).abs() > distance {
-        //     continue;
-        // }
-
         match manhattan_horiz(sensor, beacon, y_level) {
             None => continue,
             Some(horiz_dist) => {
@@ -95,24 +89,6 @@ fn build_segments(data: &Vec<(Position, Position)>, y_level: i32) -> BTreeSet<Se
                     x1: sensor.x - horiz_dist,
                     x2: sensor.x + horiz_dist,
                 };
-                println!("Pos {:?} {:?} {:?}", sensor, beacon, segment);
-                segments.insert(segment);
-            }
-        }
-    }
-
-    for y in -2..=16 {
-        let sensor = Position { x: 8, y: 7 };
-        let beacon = Position { x: 2, y: 10 };
-
-        match manhattan_horiz(&sensor, &beacon, y) {
-            None => continue,
-            Some(horiz_dist) => {
-                let segment = Segment {
-                    x1: sensor.x - horiz_dist,
-                    x2: sensor.x + horiz_dist,
-                };
-                println!("Test {} {:?} {}", y, segment, segment.x2 - segment.x1 + 1);
                 segments.insert(segment);
             }
         }
@@ -127,7 +103,6 @@ fn calc_range(segments: &BTreeSet<Segment>, data: &Vec<(Position, Position)>, y_
     let mut result = 0;
 
     for segment in segments {
-        println!("Segment {:?} {:?} {:?} ", segment, x1, x2);
         (x1, x2) = match (x1, x2) {
             (None, None) => (Some(segment.x1), Some(segment.x2)),
             (Some(x_start), Some(x_end)) => match segment.x1 > x_end {
@@ -143,13 +118,7 @@ fn calc_range(segments: &BTreeSet<Segment>, data: &Vec<(Position, Position)>, y_
     result += x2.unwrap() - x1.unwrap() + 1;
 
     let mut visited = HashSet::new();
-    for (sensor, beacon) in data {
-        if !visited.contains(&sensor) && sensor.y == y_level {
-            visited.insert(sensor);
-            result -= 1;
-            println!("TUTAJ");
-        }
-
+    for (_, beacon) in data {
         if !visited.contains(&beacon) && beacon.y == y_level {
             visited.insert(beacon);
             result -= 1;
