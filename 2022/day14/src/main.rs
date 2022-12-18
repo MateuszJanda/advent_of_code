@@ -134,6 +134,23 @@ fn drop_sand(
         None => Cmd::Abyss,
     }
 }
+
+#[allow(dead_code, unused)]
+fn print_sands(sands: &HashSet<Sand>) {
+    println!("------------");
+    for y in 0..10 {
+        let mut line = vec![];
+        for x in 493..504 {
+            match sands.contains(&Sand { x: x, y: y }) {
+                true => line.push('o'),
+                false => line.push(' '),
+            }
+        }
+
+        println!("{}", line.iter().collect::<String>());
+    }
+}
+
 fn main() {
     // Position (like X) -> Vecotr of Ranges
     let mut verti_rocks: BTreeMap<i32, Vec<Rock>> = BTreeMap::new();
@@ -159,7 +176,6 @@ fn main() {
                         let y_min = std::cmp::min(y_pos, pos.1);
                         let rocks = horiz_rocks.entry(y_min).or_default();
                         rocks.push(rock);
-
                     } else if y_pos == pos.1 {
                         let rock = Rock::new(x_pos, pos.0);
                         let rocks = horiz_rocks.entry(y_pos).or_default();
@@ -194,6 +210,8 @@ fn main() {
                 sands.insert(Sand { x: x_pos, y: y_pos });
                 x = 500;
                 y = 0;
+
+                print_sands(&sands);
             }
         }
     }
