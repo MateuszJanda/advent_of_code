@@ -133,7 +133,6 @@ const MAX_COORD: i32 = 4000000;
 
 fn find_frequency(data: &Vec<(Position, Position)>) -> i64 {
     for y in MIN_COORD..=MAX_COORD {
-        // println!("y {}", y);
         let mut x1 = None;
         let mut x2 = None;
 
