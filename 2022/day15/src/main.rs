@@ -97,12 +97,12 @@ fn build_segments(data: &Vec<(Position, Position)>, y_level: i32) -> BTreeSet<Se
     segments
 }
 
-fn calc_range(segments: &BTreeSet<Segment>, data: &Vec<(Position, Position)>, y_level: i32) -> i32 {
+fn calc_range(data: &Vec<(Position, Position)>, y_level: i32) -> i32 {
     let mut x1 = None;
     let mut x2 = None;
     let mut result = 0;
 
-    for segment in segments {
+    for segment in build_segments(&data, y_level) {
         (x1, x2) = match (x1, x2) {
             (None, None) => (Some(segment.x1), Some(segment.x2)),
             (Some(x_start), Some(x_end)) => match segment.x1 > x_end {
@@ -128,6 +128,45 @@ fn calc_range(segments: &BTreeSet<Segment>, data: &Vec<(Position, Position)>, y_
     result
 }
 
+const MIN_COORD: i32 = 0;
+const MAX_COORD: i32 = 4000000;
+
+fn find_frequency(data: &Vec<(Position, Position)>) -> i64 {
+    for y in MIN_COORD..=MAX_COORD {
+        // println!("y {}", y);
+        let mut x1 = None;
+        let mut x2 = None;
+
+        for segment in build_segments(data, y) {
+            let segment = Segment {
+                x1: std::cmp::max(segment.x1, 0),
+                x2: std::cmp::min(segment.x2, MAX_COORD),
+            };
+
+            (x1, x2) = match (x1, x2) {
+                (None, None) => {
+                    if segment.x1 != 0 {
+                        return y as i64;
+                    }
+                    (Some(segment.x1), Some(segment.x2))
+                }
+                (Some(x_start), Some(x_end)) => match segment.x1 > x_end {
+                    true => {
+                        if segment.x1 - x_end > 1 {
+                            return (x_end as i64 + 1) * MAX_COORD as i64 + y as i64;
+                        }
+                        (Some(segment.x1), Some(segment.x2))
+                    }
+                    false => (Some(x_start), Some(std::cmp::max(x_end, segment.x2))),
+                },
+                _ => panic!("Unsupported case."),
+            }
+        }
+    }
+
+    -1
+}
+
 #[allow(dead_code, unused)]
 fn print_coverage(data: &Vec<(Position, Position)>) {
     for y in 0..=20 {
@@ -151,9 +190,9 @@ fn main() {
         data.push((sensor, beacon));
     }
 
-    let segments = build_segments(&data, y_level);
-    let result1 = calc_range(&segments, &data, y_level);
+    let result1 = calc_range(&data, y_level);
     println!("{}", result1);
 
-    print_coverage(&data);
+    let result2 = find_frequency(&data);
+    println!("{}", result2);
 }
