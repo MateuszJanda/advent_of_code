@@ -1,7 +1,10 @@
 // Author:  mateusz.janda@gmail.com
 // Ad maiorem Dei gloriam
 
-use std::{collections::BTreeSet, io};
+use std::{
+    collections::{BTreeSet, HashSet},
+    io,
+};
 
 fn read_y() -> Option<i32> {
     let mut line = String::new();
@@ -18,7 +21,7 @@ fn read_y() -> Option<i32> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Hash, Eq, PartialEq, Clone, Debug)]
 struct Position {
     x: i32,
     y: i32,
@@ -93,7 +96,7 @@ fn build_segments(data: &Vec<(Position, Position)>, y_level: i32) -> BTreeSet<Se
     segments
 }
 
-fn calc_range(segments: &BTreeSet<Segment>) -> i32 {
+fn calc_range(segments: &BTreeSet<Segment>, data: &Vec<(Position, Position)>, y_level: i32) -> i32 {
     let mut x1 = None;
     let mut x2 = None;
     let mut result = 0;
@@ -111,9 +114,21 @@ fn calc_range(segments: &BTreeSet<Segment>) -> i32 {
             },
             _ => panic!("Unsupported case."),
         }
-
     }
     result += x2.unwrap() - x1.unwrap() + 1;
+
+    let mut visited = HashSet::new();
+    for (sensor, beacon) in data {
+        if !visited.contains(&sensor) && sensor.y == y_level {
+            visited.insert(sensor);
+            result -= 1;
+        }
+
+        if !visited.contains(&beacon) && beacon.y == y_level {
+            visited.insert(beacon);
+            result -= 1;
+        }
+    }
 
     result
 }
@@ -127,6 +142,6 @@ fn main() {
     }
 
     let segments = build_segments(&data, y_level);
-    let result1 = calc_range(&segments);
+    let result1 = calc_range(&segments, &data, y_level);
     println!("{}", result1);
 }
