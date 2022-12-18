@@ -121,7 +121,13 @@ fn is_left_obstacle(
         for x in 1..block[0].len() {
             if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift][x - 1] == '#'
             {
-                println!("il bo {} {} | {} {} ", start_block + y_shift,x ,start_buff - y_shift,  x - 1);
+                println!(
+                    "il bo {} {} | {} {} ",
+                    start_block + y_shift,
+                    x,
+                    start_buff - y_shift,
+                    x - 1
+                );
                 return true;
             }
         }
@@ -205,11 +211,17 @@ fn print_buffer(buffer: &Vec<Vec<char>>) {
 fn print_block(block: &Vec<Vec<char>>) {
     println!("-----------");
     for line in block.iter() {
-        println!("|{}|", line.iter().collect::<String>().replace(" ", ".").replace("#", "@"));
+        println!(
+            "|{}|",
+            line.iter()
+                .collect::<String>()
+                .replace(" ", ".")
+                .replace("#", "@")
+        );
     }
 }
 
-const NUM_OF_ROCKS: usize = 8;
+const NUM_OF_ROCKS: usize = 2022;
 const LIFT: i32 = 3;
 
 fn main() {
@@ -273,7 +285,7 @@ fn main() {
                     Some(buffer.len() - 1)
                 } else {
                     let idx = buffer.len() as i32 - 1 - (l - block.len() as i32);
-                    println!("idx {}" , idx);
+                    println!("idx {}", idx);
                     Some(idx as usize)
                 }
 
@@ -300,21 +312,19 @@ fn main() {
             '>' => move_right(&buffer, &mut block, start_block, start_buff),
             _ => panic!("Unsupported dir"),
         }
-        print_block(&block);
+        // print_block(&block);
 
         if lift < LIFT {
             lift += 1;
             continue;
         }
 
-                    // print_buffer(&buffer);
-
-
+        // print_buffer(&buffer);
 
         if is_bottom_obstacle(&buffer, &block, start_block, start_buff) {
             merge(&mut buffer, &block, start_block, start_buff);
 
-            print_buffer(&buffer);
+            // print_buffer(&buffer);
 
             block_counter += 1;
             block_num = (block_num + 1) % blocks.len();
