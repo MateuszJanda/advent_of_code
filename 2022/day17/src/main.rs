@@ -24,7 +24,7 @@ const LAST_COL: usize = 6;
 fn move_left(
     buffer: &Vec<Vec<char>>,
     block: &mut Vec<Vec<char>>,
-    start_block: usize,
+    start_block: Option<usize>,
     start_buff: Option<usize>,
 ) {
     for line in block.iter() {
@@ -45,7 +45,7 @@ fn move_left(
 fn move_right(
     buffer: &Vec<Vec<char>>,
     block: &mut Vec<Vec<char>>,
-    start_block: usize,
+    start_block: Option<usize>,
     start_buff: Option<usize>,
 ) {
     for line in block.iter() {
@@ -66,22 +66,27 @@ fn move_right(
 fn is_bottom_obstacle(
     buffer: &Vec<Vec<char>>,
     block: &Vec<Vec<char>>,
-    start_block: usize,
+    start_block: Option<usize>,
     start_buff: Option<usize>,
 ) -> bool {
+    println!("is_bottom_obstacle {:?} {:?}", start_block, start_buff);
+
     if buffer.is_empty() {
         return true;
     }
 
-    let start_buff = match start_buff {
-        Some(0) => return true,
-        Some(y) => y - 1,
-        None => buffer.len() - 1,
+    let (start_block, start_buff) = match (start_block, start_buff) {
+        (None, None) => (block.len() - 1, buffer.len()),
+        (Some(_), Some(0)) => return true,
+        (Some(s_block), Some(s_buff)) => (s_block, s_buff),
+        _ => panic!("Not supported case"),
     };
 
     for y_shift in 0..(block.len() - start_block) {
+        // println!("y_shift {} {} {} ", y_shift, start_block, start_buff);
         for x in 0..block[0].len() {
-            if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift][x] == '#' {
+            if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift - 1][x] == '#'
+            {
                 return true;
             }
         }
@@ -93,13 +98,19 @@ fn is_bottom_obstacle(
 fn is_left_obstacle(
     buffer: &Vec<Vec<char>>,
     block: &Vec<Vec<char>>,
-    start_block: usize,
+    start_block: Option<usize>,
     start_buff: Option<usize>,
 ) -> bool {
-    if start_buff.is_none() {
-        return false;
-    }
-    let start_buff = start_buff.unwrap();
+    // if start_buff.is_none() {
+    //     return false;
+    // }
+    // let start_buff = start_buff.unwrap();
+
+    let (start_block, start_buff) = match (start_block, start_buff) {
+        (None, None) => return false,
+        (Some(s_block), Some(s_buff)) => (s_block, s_buff),
+        _ => panic!("Not supported case"),
+    };
 
     for y_shift in 0..(block.len() - start_block) {
         for x in 1..block[0].len() {
@@ -116,15 +127,23 @@ fn is_left_obstacle(
 fn is_right_obstacle(
     buffer: &Vec<Vec<char>>,
     block: &Vec<Vec<char>>,
-    start_block: usize,
+    start_block: Option<usize>,
     start_buff: Option<usize>,
 ) -> bool {
-    if start_buff.is_none() {
-        return false;
-    }
-    let start_buff = start_buff.unwrap();
+    // if start_buff.is_none() {
+    //     return false;
+    // }
+    // let start_buff = start_buff.unwrap();
+
+    let (start_block, start_buff) = match (start_block, start_buff) {
+        (None, None) => return false,
+        (Some(s_block), Some(s_buff)) => (s_block, s_buff),
+        _ => panic!("Not supported case"),
+    };
 
     for y_shift in 0..(block.len() - start_block) {
+        println!("ir y_shift {} {} {} ", y_shift, start_block, start_buff);
+
         for x in 0..block[0].len() - 1 {
             if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift][x + 1] == '#'
             {
@@ -139,10 +158,10 @@ fn is_right_obstacle(
 fn merge(
     buffer: &mut Vec<Vec<char>>,
     block: &Vec<Vec<char>>,
-    start_block: usize,
+    start_block: Option<usize>,
     start_buff: Option<usize>,
 ) {
-    println!("start {} {:?} ", start_block, start_buff);
+    println!("start {:?} {:?} ", start_block, start_buff);
 
     if buffer.is_empty() || start_buff.is_none() {
         for line in block.iter().rev() {
@@ -152,6 +171,8 @@ fn merge(
     }
 
     let start_buff = start_buff.unwrap();
+    let start_block = start_block.unwrap();
+
     for y_shift in 0..(block.len() - start_block) {
         for x in 0..block[0].len() {
             if block[start_block + y_shift][x] == '#' {
@@ -174,7 +195,7 @@ fn print_buffer(buffer: &Vec<Vec<char>>) {
     }
 }
 
-const NUM_OF_ROCKS: usize = 4;
+const NUM_OF_ROCKS: usize = 2022;
 const LIFT: i32 = 3;
 
 fn main() {
@@ -224,9 +245,9 @@ fn main() {
             break;
         }
 
-        let start_block = match lift < LIFT {
-            true => block.len() - 1,
-            false => std::cmp::max(0, block.len() as i32 - 1 - (lift - LIFT)) as usize,
+        let start_block = match lift <= LIFT {
+            true => None,
+            false => Some(std::cmp::max(0, block.len() as i32 - 1 - (lift - (LIFT + 1))) as usize),
         };
 
         let start_buff = match lift <= LIFT {
@@ -237,7 +258,8 @@ fn main() {
                 if l < block.len() as i32 {
                     Some(buffer.len() - 1)
                 } else {
-                    let idx = buffer.len() as i32 - 1 - l - block.len() as i32;
+                    let idx = buffer.len() as i32 - 1 - (l - block.len() as i32);
+                    println!("idx {}" , idx);
                     Some(idx as usize)
                 }
 
@@ -273,7 +295,7 @@ fn main() {
         if is_bottom_obstacle(&buffer, &block, start_block, start_buff) {
             merge(&mut buffer, &block, start_block, start_buff);
 
-            print_buffer(&buffer);
+            // print_buffer(&buffer);
 
             block_counter += 1;
             block_num = (block_num + 1) % blocks.len();
