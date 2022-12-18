@@ -112,7 +112,6 @@ fn drop_sand(
 ) -> Cmd {
     match find_rocks(horiz_rocks, x, y) {
         Some(rock_level) => {
-            // println!("rock_level {}", rock_level);
             let y = rock_level - 1;
 
             match find_sand(sands, x, y) {
@@ -128,7 +127,17 @@ fn drop_sand(
                         Cmd::RestAt(x, y)
                     }
                 }
-                None => Cmd::RestAt(x, y),
+                None => {
+                    // Move down-left
+                    if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x - 1, y + 1) {
+                        Cmd::DropAgain(x - 1, y + 1)
+                    // Move down-right
+                    } else if !is_obstacle(&verti_rocks, &horiz_rocks, &sands, x + 1, y + 1) {
+                        Cmd::DropAgain(x + 1, y + 1)
+                    } else {
+                        Cmd::RestAt(x, y)
+                    }
+                }
             }
         }
         None => Cmd::Abyss,
@@ -150,6 +159,9 @@ fn print_sands(sands: &HashSet<Sand>) {
         println!("{}", line.iter().collect::<String>());
     }
 }
+
+const START_X: i32 = 500;
+const START_Y: i32 = 0;
 
 fn main() {
     // Position (like X) -> Vecotr of Ranges
@@ -189,32 +201,25 @@ fn main() {
                 }
                 (_, _) => panic!("Both X and Y should be initiated or set to None"),
             }
-            println!("{}:{} ", pos.0, pos.1);
         }
     }
 
-    let mut x = 500;
-    let mut y = 0;
+    let mut x = START_X;
+    let mut y = START_Y;
 
-    println!("Start {} {}", x, y);
-    while let cmd = drop_sand(&verti_rocks, &horiz_rocks, &sands, x, y) {
-        match cmd {
+    loop {
+        match drop_sand(&verti_rocks, &horiz_rocks, &sands, x, y) {
             Cmd::Abyss => break,
             Cmd::DropAgain(x_pos, y_pos) => {
-                println!("DropAgain {} {}", x_pos, y_pos);
                 x = x_pos;
                 y = y_pos;
             }
             Cmd::RestAt(x_pos, y_pos) => {
-                println!("Rest {} {}", x_pos, y_pos);
                 sands.insert(Sand { x: x_pos, y: y_pos });
-                x = 500;
-                y = 0;
-
-                print_sands(&sands);
+                x = START_X;
+                y = START_Y;
             }
         }
     }
-
     println!("{}", sands.len());
 }
