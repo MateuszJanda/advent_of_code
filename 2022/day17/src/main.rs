@@ -83,8 +83,9 @@ fn is_bottom_obstacle(
     };
 
     for y_shift in 0..(block.len() - start_block) {
-        // println!("y_shift {} {} {} ", y_shift, start_block, start_buff);
+        // println!("ib y_shift {} {} {} ", y_shift, start_block, start_buff);
         for x in 0..block[0].len() {
+            // println!("check y x {} {} | {} {} | {} {} ", start_block + y_shift, x, start_buff - y_shift - 1,x, block[start_block + y_shift][x], buffer[start_buff - y_shift - 1][x] );
             if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift - 1][x] == '#'
             {
                 return true;
@@ -195,7 +196,7 @@ fn print_buffer(buffer: &Vec<Vec<char>>) {
     }
 }
 
-const NUM_OF_ROCKS: usize = 2022;
+const NUM_OF_ROCKS: usize = 8;
 const LIFT: i32 = 3;
 
 fn main() {
@@ -218,10 +219,10 @@ fn main() {
             ],
 
         vec![
-            vec![' ',' ',' ','#',' ',' ',' '],
-            vec![' ',' ',' ','#',' ',' ',' '],
-            vec![' ',' ',' ','#',' ',' ',' '],
-            vec![' ',' ',' ','#',' ',' ',' '],
+            vec![' ',' ','#',' ',' ',' ',' '],
+            vec![' ',' ','#',' ',' ',' ',' '],
+            vec![' ',' ','#',' ',' ',' ',' '],
+            vec![' ',' ','#',' ',' ',' ',' '],
         ],
 
         vec![
@@ -295,7 +296,7 @@ fn main() {
         if is_bottom_obstacle(&buffer, &block, start_block, start_buff) {
             merge(&mut buffer, &block, start_block, start_buff);
 
-            // print_buffer(&buffer);
+            print_buffer(&buffer);
 
             block_counter += 1;
             block_num = (block_num + 1) % blocks.len();
