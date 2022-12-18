@@ -59,12 +59,18 @@ fn read_data() -> Option<(Position, Position)> {
     }
 }
 
-fn manhattan_distance(pos1: &Position, pos2: &Position) -> i32 {
-    (pos1.x - pos2.x).abs() + (pos1.y - pos2.y).abs()
+fn manhattan_distance(sensor: &Position, beacon: &Position) -> i32 {
+    (sensor.x - beacon.x).abs() + (sensor.y - beacon.y).abs()
 }
 
-fn manhattan_horiz(pos1: &Position, pos2: &Position) -> i32 {
-    (pos1.x - pos2.x).abs()
+fn manhattan_horiz(sensor: &Position, beacon: &Position, y_level: i32) -> Option<i32> {
+    let distance = manhattan_distance(sensor, beacon);
+
+    if (sensor.y - y_level).abs() > distance {
+        return None;
+    }
+
+    Some(distance - (sensor.y - y_level).abs())
 }
 
 #[derive(Ord, Eq, PartialEq, PartialOrd, Clone, Debug)]
@@ -76,21 +82,40 @@ struct Segment {
 fn build_segments(data: &Vec<(Position, Position)>, y_level: i32) -> BTreeSet<Segment> {
     let mut segments = BTreeSet::new();
     for (sensor, beacon) in data {
-        let distance = manhattan_distance(sensor, beacon);
+        // let distance = manhattan_distance(sensor, beacon);
 
-        if (sensor.y - y_level).abs() > distance {
-            continue;
+        // if (sensor.y - y_level).abs() > distance {
+        //     continue;
+        // }
+
+        match manhattan_horiz(sensor, beacon, y_level) {
+            None => continue,
+            Some(horiz_dist) => {
+                let segment = Segment {
+                    x1: sensor.x - horiz_dist,
+                    x2: sensor.x + horiz_dist,
+                };
+                println!("Pos {:?} {:?} {:?}", sensor, beacon, segment);
+                segments.insert(segment);
+            }
         }
+    }
 
-        let horiz_dist = manhattan_horiz(sensor, beacon);
-        let segment = Segment {
-            x1: sensor.x - horiz_dist,
-            x2: sensor.x + horiz_dist,
-        };
+    for y in -2..=16 {
+        let sensor = Position { x: 8, y: 7 };
+        let beacon = Position { x: 2, y: 10 };
 
-        println!("Pos {:?} {:?} {:?}", sensor, beacon, segment);
-
-        segments.insert(segment);
+        match manhattan_horiz(&sensor, &beacon, y) {
+            None => continue,
+            Some(horiz_dist) => {
+                let segment = Segment {
+                    x1: sensor.x - horiz_dist,
+                    x2: sensor.x + horiz_dist,
+                };
+                println!("Test {} {:?} {}", y, segment, segment.x2 - segment.x1 + 1);
+                segments.insert(segment);
+            }
+        }
     }
 
     segments
@@ -122,6 +147,7 @@ fn calc_range(segments: &BTreeSet<Segment>, data: &Vec<(Position, Position)>, y_
         if !visited.contains(&sensor) && sensor.y == y_level {
             visited.insert(sensor);
             result -= 1;
+            println!("TUTAJ");
         }
 
         if !visited.contains(&beacon) && beacon.y == y_level {
