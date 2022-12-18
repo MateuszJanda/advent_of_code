@@ -81,7 +81,7 @@ fn is_bottom_obstacle(
 
     for y_shift in 0..(block.len() - start_block) {
         for x in 0..block[0].len() {
-            if block[start_block + y_shift][x] == '#' && buffer[start_buff + y_shift][x] == '#' {
+            if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift][x] == '#' {
                 return true;
             }
         }
@@ -103,7 +103,7 @@ fn is_left_obstacle(
 
     for y_shift in 0..(block.len() - start_block) {
         for x in 1..block[0].len() {
-            if block[start_block + y_shift][x] == '#' && buffer[start_buff + y_shift][x - 1] == '#'
+            if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift][x - 1] == '#'
             {
                 return true;
             }
@@ -126,7 +126,7 @@ fn is_right_obstacle(
 
     for y_shift in 0..(block.len() - start_block) {
         for x in 0..block[0].len() - 1 {
-            if block[start_block + y_shift][x] == '#' && buffer[start_buff + y_shift][x + 1] == '#'
+            if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift][x + 1] == '#'
             {
                 return true;
             }
@@ -155,7 +155,7 @@ fn merge(
     for y_shift in 0..(block.len() - start_block) {
         for x in 0..block[0].len() {
             if block[start_block + y_shift][x] == '#' {
-                buffer[start_buff + y_shift][x] = '#';
+                buffer[start_buff - y_shift][x] = '#';
             }
         }
     }
@@ -216,6 +216,7 @@ fn main() {
 
     let commands = read_string().unwrap();
     for dir in commands.chars().cycle() {
+        println!("{}", block_counter);
         if block_counter == NUM_OF_ROCKS {
             break;
         }
@@ -251,7 +252,7 @@ fn main() {
         if is_bottom_obstacle(&buffer, &block, start_block, start_buff) {
             merge(&mut buffer, &block, start_block, start_buff);
 
-            print_buffer(&buffer);
+            // print_buffer(&buffer);
 
             block_counter += 1;
             block_num = (block_num + 1) % blocks.len();
