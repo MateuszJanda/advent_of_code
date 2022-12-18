@@ -29,13 +29,11 @@ fn move_left(
 ) {
     for line in block.iter() {
         if line[FIRST_COL] != ' ' {
-            println!("BUKA 1");
             return;
         }
     }
 
     if is_left_obstacle(buffer, block, start_block, start_buff) {
-        println!("BUKA 2");
         return;
     }
 
@@ -71,8 +69,6 @@ fn is_bottom_obstacle(
     start_block: Option<usize>,
     start_buff: Option<usize>,
 ) -> bool {
-    println!("is_bottom_obstacle {:?} {:?}", start_block, start_buff);
-
     if buffer.is_empty() {
         return true;
     }
@@ -85,9 +81,7 @@ fn is_bottom_obstacle(
     };
 
     for y_shift in 0..(block.len() - start_block) {
-        // println!("ib y_shift {} {} {} ", y_shift, start_block, start_buff);
         for x in 0..block[0].len() {
-            // println!("check y x {} {} | {} {} | {} {} ", start_block + y_shift, x, start_buff - y_shift - 1,x, block[start_block + y_shift][x], buffer[start_buff - y_shift - 1][x] );
             if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift - 1][x] == '#'
             {
                 return true;
@@ -104,11 +98,6 @@ fn is_left_obstacle(
     start_block: Option<usize>,
     start_buff: Option<usize>,
 ) -> bool {
-    // if start_buff.is_none() {
-    //     return false;
-    // }
-    // let start_buff = start_buff.unwrap();
-
     let (start_block, start_buff) = match (start_block, start_buff) {
         (None, None) => return false,
         (Some(s_block), Some(s_buff)) => (s_block, s_buff),
@@ -116,18 +105,9 @@ fn is_left_obstacle(
     };
 
     for y_shift in 0..(block.len() - start_block) {
-        println!("il y_shift {} {} {} ", y_shift, start_block, start_buff);
-
         for x in 1..block[0].len() {
             if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift][x - 1] == '#'
             {
-                println!(
-                    "il bo {} {} | {} {} ",
-                    start_block + y_shift,
-                    x,
-                    start_buff - y_shift,
-                    x - 1
-                );
                 return true;
             }
         }
@@ -142,11 +122,6 @@ fn is_right_obstacle(
     start_block: Option<usize>,
     start_buff: Option<usize>,
 ) -> bool {
-    // if start_buff.is_none() {
-    //     return false;
-    // }
-    // let start_buff = start_buff.unwrap();
-
     let (start_block, start_buff) = match (start_block, start_buff) {
         (None, None) => return false,
         (Some(s_block), Some(s_buff)) => (s_block, s_buff),
@@ -154,8 +129,6 @@ fn is_right_obstacle(
     };
 
     for y_shift in 0..(block.len() - start_block) {
-        println!("ir y_shift {} {} {} ", y_shift, start_block, start_buff);
-
         for x in 0..block[0].len() - 1 {
             if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift][x + 1] == '#'
             {
@@ -173,8 +146,6 @@ fn merge(
     start_block: Option<usize>,
     start_buff: Option<usize>,
 ) {
-    println!("start {:?} {:?} ", start_block, start_buff);
-
     if buffer.is_empty() || start_buff.is_none() {
         for line in block.iter().rev() {
             buffer.push(line.clone());
@@ -189,7 +160,6 @@ fn merge(
         for x in 0..block[0].len() {
             if block[start_block + y_shift][x] == '#' {
                 buffer[start_buff - y_shift][x] = '#';
-                // println!("y x: {} {}", start_buff - y_shift, x );
             }
         }
     }
@@ -265,9 +235,8 @@ fn main() {
 
     let commands = read_string().unwrap();
     for (i, dir) in commands.chars().cycle().enumerate() {
-        println!("lift {} {} {}", lift, i, dir);
+        // println!("lift {} {} {}", lift, i, dir);
         if block_counter == NUM_OF_ROCKS {
-            println!("End {}", block_counter);
             break;
         }
 
@@ -285,25 +254,8 @@ fn main() {
                     Some(buffer.len() - 1)
                 } else {
                     let idx = buffer.len() as i32 - 1 - (l - block.len() as i32);
-                    println!("idx {}", idx);
                     Some(idx as usize)
                 }
-
-                // let idx = buffer.len() as i32 - 1 - (lift - (LIFT  + 1));
-                // match idx >= 0 {
-                //     true => Some(idx as usize),
-                //     false => None,
-                // }
-
-                // if start_block == 0 {
-                //     let idx = buffer.len() as i32 - 1 - (lift - (LIFT + 1));
-                //     match idx >= 0 {
-                //         true => Some(idx as usize),
-                //         false => None,
-                //     }
-                // } else {
-                //     Some(buffer.len() - 1)
-                // }
             }
         };
 
@@ -318,8 +270,6 @@ fn main() {
             lift += 1;
             continue;
         }
-
-        // print_buffer(&buffer);
 
         if is_bottom_obstacle(&buffer, &block, start_block, start_buff) {
             merge(&mut buffer, &block, start_block, start_buff);
