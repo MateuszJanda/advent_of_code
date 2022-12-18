@@ -29,11 +29,13 @@ fn move_left(
 ) {
     for line in block.iter() {
         if line[FIRST_COL] != ' ' {
+            println!("BUKA 1");
             return;
         }
     }
 
     if is_left_obstacle(buffer, block, start_block, start_buff) {
+        println!("BUKA 2");
         return;
     }
 
@@ -114,15 +116,18 @@ fn is_left_obstacle(
     };
 
     for y_shift in 0..(block.len() - start_block) {
+        println!("il y_shift {} {} {} ", y_shift, start_block, start_buff);
+
         for x in 1..block[0].len() {
             if block[start_block + y_shift][x] == '#' && buffer[start_buff - y_shift][x - 1] == '#'
             {
+                println!("il bo {} {} | {} {} ", start_block + y_shift,x ,start_buff - y_shift,  x - 1);
                 return true;
             }
         }
     }
 
-    true
+    false
 }
 
 fn is_right_obstacle(
@@ -153,7 +158,7 @@ fn is_right_obstacle(
         }
     }
 
-    true
+    false
 }
 
 fn merge(
@@ -193,6 +198,14 @@ fn print_buffer(buffer: &Vec<Vec<char>>) {
     println!("-----------");
     for line in buffer.iter().rev() {
         println!("|{}|", line.iter().collect::<String>().replace(" ", "."));
+    }
+}
+
+#[allow(dead_code, unused)]
+fn print_block(block: &Vec<Vec<char>>) {
+    println!("-----------");
+    for line in block.iter() {
+        println!("|{}|", line.iter().collect::<String>().replace(" ", ".").replace("#", "@"));
     }
 }
 
@@ -239,8 +252,8 @@ fn main() {
     let mut lift = 0;
 
     let commands = read_string().unwrap();
-    for dir in commands.chars().cycle() {
-        println!("lift {}", lift);
+    for (i, dir) in commands.chars().cycle().enumerate() {
+        println!("lift {} {} {}", lift, i, dir);
         if block_counter == NUM_OF_ROCKS {
             println!("End {}", block_counter);
             break;
@@ -287,11 +300,16 @@ fn main() {
             '>' => move_right(&buffer, &mut block, start_block, start_buff),
             _ => panic!("Unsupported dir"),
         }
+        print_block(&block);
 
         if lift < LIFT {
             lift += 1;
             continue;
         }
+
+                    // print_buffer(&buffer);
+
+
 
         if is_bottom_obstacle(&buffer, &block, start_block, start_buff) {
             merge(&mut buffer, &block, start_block, start_buff);
