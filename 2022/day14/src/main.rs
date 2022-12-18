@@ -29,7 +29,7 @@ fn read_path() -> Option<Vec<(i32, i32)>> {
 }
 
 #[derive(PartialOrd, Eq, PartialEq, Hash, Clone, Debug)]
-struct Obstacle {
+struct Rock {
     begin: i32,
     end: i32,
 }
@@ -40,9 +40,9 @@ struct Sand {
     y: i32,
 }
 
-impl Obstacle {
+impl Rock {
     fn new(val1: i32, val2: i32) -> Self {
-        Obstacle {
+        Rock {
             begin: std::cmp::min(val1, val2),
             end: std::cmp::max(val1, val2),
         }
@@ -53,7 +53,7 @@ impl Obstacle {
     }
 }
 
-fn find_rocks(horiz_rocks: &BTreeMap<i32, Vec<Obstacle>>, x: i32, y: i32) -> Option<i32> {
+fn find_rocks(horiz_rocks: &BTreeMap<i32, Vec<Rock>>, x: i32, y: i32) -> Option<i32> {
     for (lvl, rocks) in horiz_rocks.range(y..) {
         if rocks.into_iter().find(|rock| rock.is_contact(x)).is_some() {
             return Some(*lvl);
@@ -76,8 +76,8 @@ fn find_sand(sands: &HashSet<Sand>, x: i32, mut y: i32) -> Option<i32> {
 }
 
 fn is_obstacle(
-    verti_rocks: &BTreeMap<i32, Vec<Obstacle>>,
-    horiz_rocks: &BTreeMap<i32, Vec<Obstacle>>,
+    verti_rocks: &BTreeMap<i32, Vec<Rock>>,
+    horiz_rocks: &BTreeMap<i32, Vec<Rock>>,
     sands: &HashSet<Sand>,
     x: i32,
     y: i32,
@@ -104,8 +104,8 @@ enum Cmd {
 }
 
 fn drop_sand(
-    verti_rocks: &BTreeMap<i32, Vec<Obstacle>>,
-    horiz_rocks: &BTreeMap<i32, Vec<Obstacle>>,
+    verti_rocks: &BTreeMap<i32, Vec<Rock>>,
+    horiz_rocks: &BTreeMap<i32, Vec<Rock>>,
     sands: &HashSet<Sand>,
     x: i32,
     y: i32,
@@ -136,8 +136,8 @@ fn drop_sand(
 }
 fn main() {
     // Position (like X) -> Vecotr of Ranges
-    let mut verti_rocks: BTreeMap<i32, Vec<Obstacle>> = BTreeMap::new();
-    let mut horiz_rocks: BTreeMap<i32, Vec<Obstacle>> = BTreeMap::new();
+    let mut verti_rocks: BTreeMap<i32, Vec<Rock>> = BTreeMap::new();
+    let mut horiz_rocks: BTreeMap<i32, Vec<Rock>> = BTreeMap::new();
     let mut sands: HashSet<Sand> = HashSet::new();
 
     while let Some(path) = read_path() {
@@ -151,13 +151,19 @@ fn main() {
                 }
                 (Some(x_pos), Some(y_pos)) => {
                     if x_pos == pos.0 {
-                        let obstacle = Obstacle::new(y_pos, pos.1);
-                        let obstacles = verti_rocks.entry(x_pos).or_default();
-                        obstacles.push(obstacle);
+                        let rock = Rock::new(y_pos, pos.1);
+                        let rocks = verti_rocks.entry(x_pos).or_default();
+                        rocks.push(rock);
+
+                        let rock = Rock::new(x_pos, x_pos);
+                        let y_min = std::cmp::min(y_pos, pos.1);
+                        let rocks = horiz_rocks.entry(y_min).or_default();
+                        rocks.push(rock);
+
                     } else if y_pos == pos.1 {
-                        let obstacle = Obstacle::new(x_pos, pos.0);
-                        let obstacles = horiz_rocks.entry(y_pos).or_default();
-                        obstacles.push(obstacle);
+                        let rock = Rock::new(x_pos, pos.0);
+                        let rocks = horiz_rocks.entry(y_pos).or_default();
+                        rocks.push(rock);
                     } else {
                         panic!("X != pos.0 or Y != pos.1");
                     }
