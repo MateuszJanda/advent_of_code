@@ -156,6 +156,7 @@ fn merge(
         for x in 0..block[0].len() {
             if block[start_block + y_shift][x] == '#' {
                 buffer[start_buff - y_shift][x] = '#';
+                // println!("y x: {} {}", start_buff - y_shift, x );
             }
         }
     }
@@ -167,12 +168,13 @@ fn merge(
 
 #[allow(dead_code, unused)]
 fn print_buffer(buffer: &Vec<Vec<char>>) {
+    println!("-----------");
     for line in buffer.iter().rev() {
         println!("|{}|", line.iter().collect::<String>().replace(" ", "."));
     }
 }
 
-const NUM_OF_ROCKS: usize = 2022;
+const NUM_OF_ROCKS: usize = 4;
 const LIFT: i32 = 3;
 
 fn main() {
@@ -216,8 +218,9 @@ fn main() {
 
     let commands = read_string().unwrap();
     for dir in commands.chars().cycle() {
-        println!("{}", block_counter);
+        println!("lift {}", lift);
         if block_counter == NUM_OF_ROCKS {
+            println!("End {}", block_counter);
             break;
         }
 
@@ -229,11 +232,30 @@ fn main() {
         let start_buff = match lift <= LIFT {
             true => None,
             false => {
-                let idx = buffer.len() as i32 - (lift - LIFT);
-                match idx >= 0 {
-                    true => Some(idx as usize),
-                    false => None,
+                let l = lift - (LIFT + 1);
+
+                if l < block.len() as i32 {
+                    Some(buffer.len() - 1)
+                } else {
+                    let idx = buffer.len() as i32 - 1 - l - block.len() as i32;
+                    Some(idx as usize)
                 }
+
+                // let idx = buffer.len() as i32 - 1 - (lift - (LIFT  + 1));
+                // match idx >= 0 {
+                //     true => Some(idx as usize),
+                //     false => None,
+                // }
+
+                // if start_block == 0 {
+                //     let idx = buffer.len() as i32 - 1 - (lift - (LIFT + 1));
+                //     match idx >= 0 {
+                //         true => Some(idx as usize),
+                //         false => None,
+                //     }
+                // } else {
+                //     Some(buffer.len() - 1)
+                // }
             }
         };
 
@@ -243,7 +265,6 @@ fn main() {
             _ => panic!("Unsupported dir"),
         }
 
-        println!("lift {}", lift);
         if lift < LIFT {
             lift += 1;
             continue;
@@ -252,7 +273,7 @@ fn main() {
         if is_bottom_obstacle(&buffer, &block, start_block, start_buff) {
             merge(&mut buffer, &block, start_block, start_buff);
 
-            // print_buffer(&buffer);
+            print_buffer(&buffer);
 
             block_counter += 1;
             block_num = (block_num + 1) % blocks.len();
