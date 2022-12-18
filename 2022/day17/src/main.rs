@@ -21,11 +21,20 @@ fn read_string() -> Option<String> {
 const FIRST_COL: usize = 0;
 const LAST_COL: usize = 6;
 
-fn move_left(block: &mut Vec<Vec<char>>) {
+fn move_left(
+    buffer: &Vec<Vec<char>>,
+    block: &mut Vec<Vec<char>>,
+    start_block: usize,
+    start_buff: Option<usize>,
+) {
     for line in block.iter() {
         if line[FIRST_COL] != ' ' {
             return;
         }
+    }
+
+    if is_left_obstacle(buffer, block, start_block, start_buff) {
+        return;
     }
 
     for line in block {
@@ -33,11 +42,20 @@ fn move_left(block: &mut Vec<Vec<char>>) {
     }
 }
 
-fn move_right(block: &mut Vec<Vec<char>>) {
+fn move_right(
+    buffer: &Vec<Vec<char>>,
+    block: &mut Vec<Vec<char>>,
+    start_block: usize,
+    start_buff: Option<usize>,
+) {
     for line in block.iter() {
         if line[LAST_COL] != ' ' {
             return;
         }
+    }
+
+    if is_right_obstacle(buffer, block, start_block, start_buff) {
+        return;
     }
 
     for line in block {
@@ -45,21 +63,25 @@ fn move_right(block: &mut Vec<Vec<char>>) {
     }
 }
 
-fn is_floor(
+fn is_bottom_obstacle(
     buffer: &Vec<Vec<char>>,
     block: &Vec<Vec<char>>,
-    start_block_line: usize,
-    start_buff_line: usize,
+    start_block: usize,
+    start_buff: Option<usize>,
 ) -> bool {
     if buffer.is_empty() {
         return true;
     }
 
-    for y_shift in 0..(block.len() - start_block_line) {
+    let start_buff = match start_buff {
+        Some(0) => return true,
+        Some(y) => y - 1,
+        None => buffer.len() - 1,
+    };
+
+    for y_shift in 0..(block.len() - start_block) {
         for x in 0..block[0].len() {
-            if buffer[start_buff_line + y_shift][x] == '#'
-                && block[start_block_line + y_shift][x] == '#'
-            {
+            if block[start_block + y_shift][x] == '#' && buffer[start_buff + y_shift][x] == '#' {
                 return true;
             }
         }
@@ -68,41 +90,78 @@ fn is_floor(
     false
 }
 
-// fn is_wall(
-//     buffer: &Vec<Vec<char>>,
-//     block: &Vec<Vec<char>>,
-//     start_block_line: usize,
-//     start_buff_line: usize,
-// ) -> bool {
-//     false
-// }
+fn is_left_obstacle(
+    buffer: &Vec<Vec<char>>,
+    block: &Vec<Vec<char>>,
+    start_block: usize,
+    start_buff: Option<usize>,
+) -> bool {
+    if start_buff.is_none() {
+        return false;
+    }
+    let start_buff = start_buff.unwrap();
+
+    for y_shift in 0..(block.len() - start_block) {
+        for x in 1..block[0].len() {
+            if block[start_block + y_shift][x] == '#' && buffer[start_buff + y_shift][x - 1] == '#'
+            {
+                return true;
+            }
+        }
+    }
+
+    true
+}
+
+fn is_right_obstacle(
+    buffer: &Vec<Vec<char>>,
+    block: &Vec<Vec<char>>,
+    start_block: usize,
+    start_buff: Option<usize>,
+) -> bool {
+    if start_buff.is_none() {
+        return false;
+    }
+    let start_buff = start_buff.unwrap();
+
+    for y_shift in 0..(block.len() - start_block) {
+        for x in 0..block[0].len() - 1 {
+            if block[start_block + y_shift][x] == '#' && buffer[start_buff + y_shift][x + 1] == '#'
+            {
+                return true;
+            }
+        }
+    }
+
+    true
+}
 
 fn merge(
     buffer: &mut Vec<Vec<char>>,
     block: &Vec<Vec<char>>,
-    start_block_line: usize,
-    start_buff_line: usize,
+    start_block: usize,
+    start_buff: Option<usize>,
 ) {
-    println!("start {} {} ", start_block_line, start_buff_line);
+    println!("start {} {:?} ", start_block, start_buff);
 
-    if buffer.is_empty() {
+    if buffer.is_empty() || start_buff.is_none() {
         for line in block.iter().rev() {
             buffer.push(line.clone());
         }
-
         return;
     }
 
-    for y in (0..start_block_line).rev() {
-        buffer.push(block[y].clone());
-    }
-
-    for y_shift in 0..(block.len() - start_block_line) {
+    let start_buff = start_buff.unwrap();
+    for y_shift in 0..(block.len() - start_block) {
         for x in 0..block[0].len() {
-            if block[start_block_line + y_shift][x] == '#' {
-                buffer[start_buff_line + y_shift][x] = '#';
+            if block[start_block + y_shift][x] == '#' {
+                buffer[start_buff + y_shift][x] = '#';
             }
         }
+    }
+
+    for y in (0..start_block).rev() {
+        buffer.push(block[y].clone());
     }
 }
 
@@ -156,24 +215,30 @@ fn main() {
     let mut lift = 0;
 
     let commands = read_string().unwrap();
-    for dir in commands.chars() {
-        if block_counter >= NUM_OF_ROCKS {
+    for dir in commands.chars().cycle() {
+        if block_counter == NUM_OF_ROCKS {
             break;
         }
 
-        let start_block_line = match lift >= LIFT {
-            true => std::cmp::max(0, block.len() as i32 - 1 - (lift - LIFT)) as usize,
-            false => block.len() - 1,
+        let start_block = match lift < LIFT {
+            true => block.len() - 1,
+            false => std::cmp::max(0, block.len() as i32 - 1 - (lift - LIFT)) as usize,
         };
 
-        let start_buff_line = match lift >= LIFT {
-            true => std::cmp::max(0, buffer.len() as i32 - 1 - (lift - LIFT)) as usize,
-            false => 0,
+        let start_buff = match lift <= LIFT {
+            true => None,
+            false => {
+                let idx = buffer.len() as i32 - (lift - LIFT);
+                match idx >= 0 {
+                    true => Some(idx as usize),
+                    false => None,
+                }
+            }
         };
 
         match dir {
-            '<' => move_left(&mut block),
-            '>' => move_right(&mut block),
+            '<' => move_left(&buffer, &mut block, start_block, start_buff),
+            '>' => move_right(&buffer, &mut block, start_block, start_buff),
             _ => panic!("Unsupported dir"),
         }
 
@@ -183,8 +248,8 @@ fn main() {
             continue;
         }
 
-        if is_floor(&buffer, &block, start_block_line, start_buff_line) {
-            merge(&mut buffer, &block, start_block_line, start_buff_line);
+        if is_bottom_obstacle(&buffer, &block, start_block, start_buff) {
+            merge(&mut buffer, &block, start_block, start_buff);
 
             print_buffer(&buffer);
 
