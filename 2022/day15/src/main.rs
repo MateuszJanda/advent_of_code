@@ -128,6 +128,21 @@ fn calc_range(segments: &BTreeSet<Segment>, data: &Vec<(Position, Position)>, y_
     result
 }
 
+#[allow(dead_code, unused)]
+fn print_coverage(data: &Vec<(Position, Position)>) {
+    for y in 0..=20 {
+        let mut line = vec![' '; 20 + 1];
+        for segment in build_segments(data, y) {
+            let x_start = std::cmp::max(segment.x1, 0);
+            let x_end = std::cmp::min(segment.x2, 20);
+            for x in x_start..=x_end {
+                line[x as usize] = '#';
+            }
+        }
+        println!("{}", line.iter().collect::<String>());
+    }
+}
+
 fn main() {
     let y_level = read_y().unwrap();
     let mut data = vec![];
@@ -139,4 +154,6 @@ fn main() {
     let segments = build_segments(&data, y_level);
     let result1 = calc_range(&segments, &data, y_level);
     println!("{}", result1);
+
+    print_coverage(&data);
 }
