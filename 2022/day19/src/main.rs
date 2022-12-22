@@ -3,12 +3,13 @@
 
 use std::io;
 
+#[derive(Clone, Debug)]
 struct Blueprint {
     id: i32,
-    ore_robot: i32,
-    clay_robot: i32,
-    obsidian_robot: (i32, i32),
-    geode_robot: i32,
+    ore_robot_cost: i32,
+    clay_robot_cost: i32,
+    obsidian_robot_cost: (i32, i32),
+    geode_robot_cost: i32,
 }
 
 fn read_bluprint() -> Option<Blueprint> {
@@ -35,15 +36,69 @@ fn read_bluprint() -> Option<Blueprint> {
 
             Some(Blueprint {
                 id: v[0],
-                ore_robot: v[1],
-                clay_robot: v[2],
-                obsidian_robot: (v[3], v[4]),
-                geode_robot: v[5],
+                ore_robot_cost: v[1],
+                clay_robot_cost: v[2],
+                obsidian_robot_cost: (v[3], v[4]),
+                geode_robot_cost: v[5],
             })
         }
     }
 }
 
+#[derive(Clone, Debug)]
+struct State {
+    ore_robots: i32,
+    ore: i32,
+}
+
+impl State {
+    fn new(ore_robots: i32, ore: i32) -> Self {
+        State { ore_robots, ore }
+    }
+}
+
+const MINUTES: usize = 24;
+
 fn main() {
-    while let Some(_) = read_bluprint() {}
+    while let Some(bluprint) = read_bluprint() {
+        let mut dp = vec![];
+        let empty_row = vec![State::new(0, 0); MINUTES + 1];
+        dp.push(empty_row);
+
+        let mut row = vec![State::new(1, 0)];
+        for idx in 1..=MINUTES {
+            row.push(State {
+                ore_robots: 1,
+                ore: row[idx - 1].ore + 1,
+            });
+        }
+        dp.push(row);
+
+        // println!("{:?}\n\n", dp);
+
+        for y in 2..=MINUTES {
+            let mut row = vec![State::new(1, 0)];
+            let mut buy_ore_robot = true;
+            for x in 1..=MINUTES {
+
+                match buy_ore_robot {
+                    true => {
+
+                        if dp[y-1][x-1].ore >= bluprint.ore_robot_cost
+
+                        false
+                    },
+                    false =>
+                    {
+                        let ore = dp[y][x - 1].ore + dp[y][x - 1].ore_robots;
+                        let ore_robots = dp[y][x - 1].ore_robots;
+                    }
+                }
+
+                ore_robots = dp[y - 1][x] + dp[y - 1][x]
+                row[x] = State { ore_robots: row }
+            }
+            dp.push(row);
+        }
+    }
 }
