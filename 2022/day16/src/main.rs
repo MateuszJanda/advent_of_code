@@ -65,6 +65,7 @@ fn rates_with_inedexes(
         .collect()
 }
 
+const INF: i32 = 1_000_000_000 + 5;
 const TIME_LIMIT: i32 = 30;
 const START_NODE: &str = "AA";
 
@@ -94,8 +95,6 @@ fn main() {
     dfs.search(start_node.unwrap());
     println!("{}", dfs.best_result.unwrap());
 }
-
-
 
 struct Dfs {
     distance: Vec<Vec<i32>>,
@@ -131,6 +130,8 @@ impl Dfs {
     /// #algorithm: Floyd-Warshall algorithm
     /// Time complexity O(n^3)
     fn shortest_paths(&mut self, graph: &HashMap<usize, Vec<usize>>) {
+        self.distance = vec![vec![INF; graph.len()]; graph.len()];
+
         // Init matrix
         for (idx1, adjacents) in graph {
             for idx2 in adjacents {
@@ -197,7 +198,7 @@ impl Dfs {
             }
 
             let score = self.rates[&node] * (self.time - time_to_activate);
-            if self.is_better_score(node, score, self.time - time_to_activate) {
+            if !self.is_better_score(node, score, self.time - time_to_activate) {
                 continue;
             }
 
