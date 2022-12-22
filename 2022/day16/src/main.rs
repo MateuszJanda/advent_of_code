@@ -176,6 +176,9 @@ impl Dfs {
         nodes.sort_by(|a, b| self.rates[b].cmp(&self.rates[a]));
         for node in nodes.iter() {
             current_time -= 2;
+            if current_time < 0 {
+                break;
+            }
             result += self.rates[&node] * current_time;
         }
 
@@ -206,18 +209,16 @@ impl Dfs {
             self.scores.push(score);
             self.visited.insert(node);
 
+            self.best_result = match self.best_result {
+                None => Some(self.scores.iter().sum()),
+                Some(result) => Some(std::cmp::max(result, self.scores.iter().sum())),
+            };
+
             self.search(node);
 
             self.visited.remove(&node);
             self.scores.pop();
             self.time += time_to_activate;
-        }
-
-        if self.visited.len() == self.distance.len() {
-            self.best_result = match self.best_result {
-                None => Some(self.scores.iter().sum()),
-                Some(result) => Some(std::cmp::max(result, self.scores.iter().sum())),
-            }
         }
     }
 }
