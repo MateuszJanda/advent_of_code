@@ -82,34 +82,28 @@ fn graph_with_inedexes(
     graph_with_names: &HashMap<String, Vec<String>>,
     name_to_idx: &HashMap<String, usize>,
 ) -> HashMap<usize, Vec<usize>> {
-    let mut graph = HashMap::new();
-
-    for (name, neighbours) in graph_with_names {
-        let mut neihbours_indexes = vec![];
-        for neighbour in neighbours.iter() {
-            let nidx = name_to_idx[neighbour];
-            neihbours_indexes.push(nidx);
-        }
-
-        let idx = name_to_idx[name];
-        graph.insert(idx, neihbours_indexes);
-    }
-
-    graph
+    graph_with_names
+        .iter()
+        .map(|(name, neighbours)| {
+            (
+                name_to_idx[name],
+                neighbours
+                    .iter()
+                    .map(|neighbour| name_to_idx[neighbour])
+                    .collect(),
+            )
+        })
+        .collect()
 }
 
 fn rates_with_inedexes(
     rates_with_names: &HashMap<String, i32>,
     name_to_idx: &HashMap<String, usize>,
 ) -> HashMap<usize, i32> {
-    let mut rates = HashMap::new();
-
-    for (name, rate) in rates_with_names {
-        let idx = name_to_idx[name];
-        rates.insert(idx, *rate);
-    }
-
-    rates
+    rates_with_names
+        .iter()
+        .map(|(name, rate)| (name_to_idx[name], *rate))
+        .collect()
 }
 
 // #algorithm: Floyd–Warshall algorithm
@@ -155,5 +149,4 @@ fn main() {
 
     let graph = graph_with_inedexes(&graph_with_names, &name_to_idx);
     let rates = rates_with_inedexes(&rates_with_names, &name_to_idx);
-
 }
