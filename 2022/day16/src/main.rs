@@ -1,7 +1,6 @@
 // Author:  mateusz.janda@gmail.com
 // Ad maiorem Dei gloriam
 
-use std::clone;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
@@ -42,8 +41,8 @@ fn read_valve() -> Option<(String, i32, Vec<String>)> {
 fn bfs(
     start_valve: &String,
     mut time_passed: i32,
-    graph: &HashMap<String, Vec<String>>,
-    rates: &HashMap<String, i32>,
+    graph_with_names: &HashMap<String, Vec<String>>,
+    rates_with_names: &HashMap<String, i32>,
     open: &HashSet<String>,
 ) -> (String, i32) {
     let mut visited = HashSet::new();
@@ -58,8 +57,8 @@ fn bfs(
             break;
         }
 
-        // println!("rates {}", valve);
-        let rate = rates[&valve] * (TIME_LIMIT - t);
+        // println!("rates_with_names {}", valve);
+        let rate = rates_with_names[&valve] * (TIME_LIMIT - t);
         // println!(" Rate {} {} {}", valve, rate, t);
         if !open.contains(&valve) && rate > best_rate {
             best_rate = rate;
@@ -69,7 +68,7 @@ fn bfs(
 
         visited.insert(valve.clone());
 
-        for v in graph[&valve].iter() {
+        for v in graph_with_names[&valve].iter() {
             if !visited.contains(v) {
                 queue.push_back((v.clone(), t + 1));
             }
@@ -79,51 +78,57 @@ fn bfs(
     (best_valve, time_passed)
 }
 
-// fn create_name_map(input: &<String, Vec<String>>) ->  HashMap<String, usize> {
-//     let mut names = graph
-//         .iter()
-//         .map(|(name, _)| name.clone())
-//         .collect::<Vec<String>>();
-//     names.sort();
+fn graph_with_inedexes(
+    graph_with_names: &HashMap<String, Vec<String>>,
+    name_to_idx: &HashMap<String, usize>,
+) -> HashMap<usize, Vec<usize>> {
+    let mut graph = HashMap::new();
 
-//     let mut names = graph
-//         .iter()
-//         .map(|(name, _)| name.clone())
-//         .collect::<Vec<String>>();
-//     names.sort();
+    for (name, neighbours) in graph_with_names {
+        let mut neihbours_indexes = vec![];
+        for neighbour in neighbours.iter() {
+            let nidx = name_to_idx[neighbour];
+            neihbours_indexes.push(nidx);
+        }
 
-//     let names_vec = names
-//         .iter()
-//         .enumerate()
-//         .map(|(idx, name)| (name.clone(), idx))
-//         .collect::<Vec<(String, usize)>>();
-//     let names_map: HashMap<String, usize> = HashMap::from_iter(names_vec.into_iter());
+        let idx = name_to_idx[name];
+        graph.insert(idx, neihbours_indexes);
+    }
 
-//     names_map
-// }
+    graph
+}
+
+fn rates_with_inedexes(
+    rates_with_names: &HashMap<String, i32>,
+    name_to_idx: &HashMap<String, usize>,
+) -> HashMap<usize, i32> {
+    let mut rates = HashMap::new();
+
+    for (name, rate) in rates_with_names {
+        let idx = name_to_idx[name];
+        rates.insert(idx, *rate);
+    }
+
+    rates
+}
 
 // #algorithm: Floyd–Warshall algorithm
 // Time complexity O(n^3)
-fn shortest_paths(graph: &HashMap<String, Vec<String>>) -> Vec<Vec<i32>> {
-    // let names_map = create_name_map(graph);
-
+fn shortest_paths(graph_with_names: &HashMap<usize, Vec<usize>>) -> Vec<Vec<i32>> {
     // Init matrix
-    let mut distance = vec![vec![i32::MAX; graph.len()]; graph.len()];
-    for (name, adjacents) in graph {
-        let idx1 = names_map[name];
-
-        for adj in adjacents {
-            let idx2 = names_map[adj];
-            distance[idx1][idx2] = 1;
+    let mut distance = vec![vec![i32::MAX; graph_with_names.len()]; graph_with_names.len()];
+    for (idx1, adjacents) in graph_with_names {
+        for idx2 in adjacents {
+            distance[*idx1][*idx2] = 1;
         }
 
-        distance[idx1][idx1] = 0;
+        distance[*idx1][*idx1] = 0;
     }
 
     // Finding shortest paths
-    for k in 0..graph.len() {
-        for i in 0..graph.len() {
-            for j in 0..graph.len() {
+    for k in 0..graph_with_names.len() {
+        for i in 0..graph_with_names.len() {
+            for j in 0..graph_with_names.len() {
                 distance[i][j] = std::cmp::min(distance[i][j], distance[i][k] + distance[k][j]);
             }
         }
@@ -136,39 +141,19 @@ const TIME_LIMIT: i32 = 30;
 
 fn main() {
     let mut name_to_idx = HashMap::new();
-    let mut graph = HashMap::new();
-    let mut rates = HashMap::new();
+    let mut graph_with_names = HashMap::new();
+    let mut rates_with_names = HashMap::new();
 
     let mut idx = 0;
     while let Some((valve, rate, adjacent)) = read_valve() {
-        name_to_idx.insert(valve, idx);
-        graph.insert(idx, adjacent);
-        rates.insert(idx, rate);
+        name_to_idx.insert(valve.clone(), idx);
+        graph_with_names.insert(valve.clone(), adjacent);
+        rates_with_names.insert(valve, rate);
 
         idx += 1;
     }
-    // let name_to_idx = create_name_map(intut_values);
 
-    // map.insert("AA".to_string(), "BB".to_string());
-    // map.insert("BB".to_string(), "CC".to_string());
-    // map.insert("CC".to_string(), "DD".to_string());
+    let graph = graph_with_inedexes(&graph_with_names, &name_to_idx);
+    let rates = rates_with_inedexes(&rates_with_names, &name_to_idx);
 
-    // let base = vec!["AA".to_string(), "BB".to_string(), "CC".to_string()];
-    // let mut current = vec!["AA".to_string(), "BB".to_string(), "CC".to_string()];
-
-    // current = permutation(map, base, current);
-    // println!("{:?}", current);
-
-    // let num_of_valves = graph.len();
-    // println!("num_of_valves {}", open.len());
-    // let mut start_valve = "AA".to_string();
-    // let mut time_passed = 1;
-
-    // // Greedy
-    // while time_passed <= TIME_LIMIT && open.len() != num_of_valves {
-    //     (start_valve, time_passed) = bfs(&start_valve, time_passed, &graph, &rates, &open);
-    //     open.insert(start_valve.clone());
-
-    //     println!("Open {} {}", start_valve, time_passed);
-    // }
 }
